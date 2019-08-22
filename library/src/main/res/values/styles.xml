@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="DraggableTranslucentTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@color/image_view_bg_color</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <color name="image_view_bg_color">#00000000</color>
+
+</resources>
