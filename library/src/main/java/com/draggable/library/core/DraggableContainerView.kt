@@ -2,7 +2,6 @@ package com.draggable.library.core
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Color
@@ -47,7 +46,6 @@ class DraggableContainerView : FrameLayout {
     private var mDownX: Float = 0f
     private var mDownY: Float = 0f
     private val MAX_TRANSLATE_Y = 500
-    private val DRAG_EXIT_DISTANCE = 230
 
     private var isClickEvent = false
 
@@ -75,7 +73,7 @@ class DraggableContainerView : FrameLayout {
         draggableParams = paramsInfo
         post {
             adjustAnimateParams(paramsInfo)
-            startEnterAnimator()
+            enterWithAnimator()
         }
     }
 
@@ -84,7 +82,7 @@ class DraggableContainerView : FrameLayout {
         setScaleChildView(childView)
         post {
             adjustAnimateParams(paramsInfo)
-            startEnterAnimator()
+            enterWithAnimator()
         }
     }
 
@@ -103,7 +101,6 @@ class DraggableContainerView : FrameLayout {
 
     //child view scale core params
     private fun changeChildViewAnimateParams() {
-//        Log.d(TAG, "mCurrentWidth : $mCurrentWidth ; mCurrentHeight : $mCurrentHeight;  mCurrentTranslateX : $mCurrentTranslateX ; mCurrentTransLateY : $mCurrentTransLateY")
         scaledChildView?.apply {
             layoutParams = LayoutParams(mCurrentWidth, mCurrentHeight)
             translationX = mCurrentTranslateX
@@ -126,13 +123,11 @@ class DraggableContainerView : FrameLayout {
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         if (isAutoAnimating) return super.dispatchTouchEvent(event)
-
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 mDownX = event.x
                 mDownY = event.y
                 isClickEvent = true
-                return true
             }
             MotionEvent.ACTION_MOVE -> {
                 isClickEvent = false
@@ -145,6 +140,8 @@ class DraggableContainerView : FrameLayout {
                     } else {
                         if (dy > 0) {
                             onActionMove(event)
+                        }else{
+                            scaledChildView?.dispatchTouchEvent(event)
                         }
                     }
                 }
@@ -155,28 +152,29 @@ class DraggableContainerView : FrameLayout {
                 }
             }
         }
-
         return super.dispatchTouchEvent(event)
     }
 
     private fun onActionUp() {
-        if (mCurrentTransLateY > 0) {
-            if (mCurrentTransLateY > DRAG_EXIT_DISTANCE) {
-                startExitAnimator()
+        Log.d(TAG, "mCurrentTransLateY : $mCurrentTransLateY")
+        if (mCurrentScaleY != 1f) {
+            if (mCurrentScaleY < 0.5) {
+                exitWithAnimator()
             } else {
-                startRestoreInitAnimator()
+                isClickEvent = false
+                restoreStatusWithAnimator()
             }
         } else {
             if (isClickEvent) {
                 isClickEvent = false
-                startExitAnimator()
+                exitWithAnimator()
             }
         }
     }
 
     private fun onActionMove(event: MotionEvent) {
-        var offsetY = Math.abs(event.y - mDownY)
-        val offsetX = Math.abs(event.x - mDownX)
+        var offsetY = event.y - mDownY
+        val offsetX = event.x - mDownX
 
         if (offsetY > MAX_TRANSLATE_Y) {
             offsetY = MAX_TRANSLATE_Y.toFloat()
@@ -209,13 +207,13 @@ class DraggableContainerView : FrameLayout {
     /**
      * enter animator
      * */
-    private fun startEnterAnimator() {
+    private fun enterWithAnimator() {
         val dx = mCurrentTranslateX - 0
         val dy = mCurrentTransLateY - mTargetTranslateY
         val dWidth = width - draggableParams.viewWidth
         val dHeight = maxHeight - draggableParams.viewHeight
         Log.d(TAG, "dx:$dx  dy:$dy  dWidth : $dWidth  dHeight:$dHeight")
-        val newEnterAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+        val enterAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
             duration = ANIMATOR_DURATION
             addUpdateListener {
                 val percent = it.animatedValue as Float
@@ -236,16 +234,17 @@ class DraggableContainerView : FrameLayout {
                 }
             })
         }
-        newEnterAnimator.start()
+        enterAnimator.start()
     }
 
     /**
      * exit animator
      * */
-    fun startExitAnimator() {
+    fun exitWithAnimator() {
         val scaleWidth = width * mCurrentScaleX
         val scaleHeight = maxHeight * mCurrentScaleY
-//        mCurrentTranslateX += width * (1 - mCurrentScaleX) / 2
+        mCurrentTranslateX += width * (1 - mCurrentScaleX) / 2
+        mCurrentTransLateY += maxHeight * (1 - mCurrentScaleY) / 2
         mCurrentScaleX = 1f
         mCurrentScaleY = 1f
 
@@ -254,13 +253,7 @@ class DraggableContainerView : FrameLayout {
         val dWidth = scaleWidth - draggableParams.viewWidth
         val dHeight = scaleHeight - draggableParams.viewHeight
 
-        Log.d(
-            TAG,
-            "mCurrentTranslateX:$mCurrentTranslateX  mCurrentTransLateY:$mCurrentTransLateY  scaleWidth:$scaleWidth  scaleHeight:$scaleHeight"
-        )
-        Log.d(TAG, "dx:$dx  dy:$dy  dWidth:$dWidth  dHeight:$dHeight")
-
-        val newExitAnimator = ValueAnimator.ofFloat(1f, 0f).apply {
+        val exitAnimator = ValueAnimator.ofFloat(1f, 0f).apply {
             duration = ANIMATOR_DURATION
             addUpdateListener {
                 val percent = it.animatedValue as Float
@@ -282,50 +275,39 @@ class DraggableContainerView : FrameLayout {
                 }
             })
         }
-        newExitAnimator.start()
+        exitAnimator.start()
     }
 
     //用户没有触发拖拽退出，还原状态
-    private fun startRestoreInitAnimator() {
-        val scaleYAnimator = ValueAnimator.ofFloat(mCurrentScaleY, 1f).apply {
+    private fun restoreStatusWithAnimator() {
+
+        val initAlpha = mAlpha
+        val dyAlpha = 255 - mAlpha
+
+        val initScaleX = mCurrentScaleX
+        val dScaleX = 1 - mCurrentScaleX
+
+        val initScaleY = mCurrentScaleY
+        val dScaleY = 1 - mCurrentScaleY
+        val initX = mCurrentTranslateX
+        val dx = 0 - mCurrentTranslateX
+
+        val initY = mCurrentTransLateY
+        val dy = mTargetTranslateY - mCurrentTransLateY
+
+        val restoreAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
             duration = ANIMATOR_DURATION
             addUpdateListener {
-                mCurrentScaleY = it.animatedValue as Float
+                val percent = it.animatedValue as Float
+                mCurrentTransLateY = initY + (dy * percent)
+                mCurrentTranslateX = initX + (dx * percent)
+
+                mCurrentScaleY = initScaleY + (dScaleY * percent)
+                mCurrentScaleX = initScaleX + (dScaleX * percent)
+                mAlpha = initAlpha + (dyAlpha * percent).toInt()
+
                 changeChildViewDragParams()
             }
-        }
-
-        val scaleXAnimator = ValueAnimator.ofFloat(mCurrentScaleX, 1f).apply {
-            duration = ANIMATOR_DURATION
-            addUpdateListener {
-                mCurrentScaleX = it.animatedValue as Float
-            }
-        }
-
-        val translateXRestoreAnimator = ValueAnimator.ofFloat(mCurrentTranslateX, 0f).apply {
-            duration = ANIMATOR_DURATION
-            addUpdateListener { valueAnimator -> mCurrentTranslateX = valueAnimator.animatedValue as Float }
-        }
-
-        val translateYRestoreAnimator = ValueAnimator.ofFloat(mCurrentTransLateY, 0f).apply {
-            duration = ANIMATOR_DURATION
-            addUpdateListener { valueAnimator -> mCurrentTransLateY = valueAnimator.animatedValue as Float }
-        }
-
-        val alphaRestoreAnimator = ValueAnimator.ofInt(mAlpha, 255).apply {
-            duration = ANIMATOR_DURATION
-            addUpdateListener { valueAnimator -> mAlpha = valueAnimator.animatedValue as Int }
-        }
-
-        val restoreAnimator = AnimatorSet().apply {
-            playTogether(
-                scaleYAnimator,
-                scaleXAnimator,
-                translateXRestoreAnimator,
-                translateYRestoreAnimator,
-                alphaRestoreAnimator
-            )
-            duration = ANIMATOR_DURATION
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator?) {
                     isAutoAnimating = true

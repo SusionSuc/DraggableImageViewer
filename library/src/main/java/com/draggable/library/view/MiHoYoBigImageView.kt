@@ -313,7 +313,7 @@ class MiHoYoBigImageView : FrameLayout {
 
 //        photoView.scaleType = ImageView.ScaleType.CENTER_CROP
 
-        Log.d(TAG, "startExitAnimator")
+        Log.d(TAG, "exitWithAnimator")
         val ENTER_ANIMATOR_DURATION = 200L
 
         val translateXAnimator = ValueAnimator.ofFloat(mCurrentTranslateX, originLeft.toFloat()).apply {
