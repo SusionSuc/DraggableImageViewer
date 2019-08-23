@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.draggable.library.photoview;
+package com.draggable.library.core.photoview;
 
 import android.content.Context;
 import android.graphics.Matrix;

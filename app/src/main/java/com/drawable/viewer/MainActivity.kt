@@ -14,5 +14,10 @@ class MainActivity : AppCompatActivity() {
         mTvSimpleImage.setOnClickListener {
             startActivity(Intent(this, SimpleImageSampleActivity::class.java))
         }
+
+        mTvMutilImage.setOnClickListener {
+            startActivity(Intent(this, ImageListSampleActivity::class.java))
+
+        }
     }
 }

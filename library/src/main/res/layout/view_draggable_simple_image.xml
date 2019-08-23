@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
+       android:orientation="vertical"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       tools:parentTag="android.widget.FrameLayout">
+
+    <com.draggable.library.core.photoview.PhotoView
+            android:id="@+id/mDraggableImageViewPhotoView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <RelativeLayout
+            android:layout_margin="18dp"
+            android:layout_gravity="bottom"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent">
+
+        <TextView
+                android:padding="6dp"
+                android:background="@drawable/bg_view_origin_image"
+                android:textColor="#ffffff"
+                android:text="查看原图(114K)"
+                android:layout_centerInParent="true"
+                android:textSize="14dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ImageView
+                android:src="@drawable/icon_down_image"
+                android:layout_alignParentRight="true"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+
+    </RelativeLayout>
+
+</merge>

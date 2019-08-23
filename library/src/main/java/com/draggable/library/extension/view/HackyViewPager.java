@@ -1,4 +1,4 @@
-package com.draggable.library.view;
+package com.draggable.library.extension.view;
 
 import android.content.Context;
 import android.util.AttributeSet;

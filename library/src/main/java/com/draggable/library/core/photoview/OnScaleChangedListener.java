@@ -1,4 +1,4 @@
-package com.draggable.library.photoview;
+package com.draggable.library.core.photoview;
 
 /**
  * Interface definition for callback to be invoked when attached ImageView scale changes

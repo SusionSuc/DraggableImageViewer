@@ -6,7 +6,7 @@
        android:background="#000000"
        tools:parentTag="FrameLayout">
 
-    <com.draggable.library.view.HackyViewPager
+    <com.draggable.library.extension.view.HackyViewPager
             android:id="@+id/mImageViewerViewPage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>

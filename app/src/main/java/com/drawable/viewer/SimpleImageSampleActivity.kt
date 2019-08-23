@@ -6,7 +6,7 @@ import android.util.Log
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.draggable.library.SimpleImageViewerActivity
-import com.draggable.library.core.DraggableParamsHelper
+import com.draggable.library.core.DraggableViewerHelper
 import kotlinx.android.synthetic.main.activity_sample_simple_image.*
 
 class SimpleImageSampleActivity : AppCompatActivity() {
@@ -46,14 +46,8 @@ class SimpleImageSampleActivity : AppCompatActivity() {
 
         sampleViews.forEach { sampleInfo ->
             sampleInfo.view.setOnClickListener {
-                Log.d(TAG, "sampleInfo.whRadio : ${sampleInfo.whRadio}")
-                SimpleImageViewerActivity.start(
-                    this@SimpleImageSampleActivity,
-                    DraggableParamsHelper.createImageDraggableParamsWithWHRadio(sampleInfo.view, sampleInfo.whRadio),
-                    sampleInfo.url
-                )
+                DraggableViewerHelper.showSimpleImage(this, sampleInfo.view, sampleInfo.url, sampleInfo.whRadio)
             }
-
             loadImage(sampleInfo.url, sampleInfo.view)
         }
     }

@@ -3,9 +3,16 @@
           package="com.drawable.library">
 
     <application>
-        <activity android:name="com.draggable.library.SimpleImageViewerActivity"
+
+        <activity android:name="com.draggable.library.ImagesViewerActivity"
                   android:theme="@style/DraggableTranslucentTheme">
         </activity>
+
+        <activity
+                android:name="com.draggable.library.SimpleImageViewerActivity"
+                android:theme="@style/DraggableTranslucentTheme">
+        </activity>
+
     </application>
 
 </manifest>

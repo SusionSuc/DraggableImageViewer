@@ -3,30 +3,21 @@ package com.draggable.library.core
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
-import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 
-/**
- * 可以缩放子View  && 拖拽退出 的容器View
- * */
-class DraggableContainerView : FrameLayout {
-
-    interface ActionListener {
-        fun onExit() // drag to exit
-    }
+//拖拽、缩放动画的实现
+class DraggableZoomCore(
+    val draggableParams: DraggableParamsInfo,
+    val scaleDraggableView: View,
+    val mContainerWidth: Int,
+    val mContainerHeight: Int,
+    val actionListener: ActionListener? = null
+) {
 
     private val TAG = javaClass.simpleName
-
-    var scaledChildView: View? = null
-
-    var actionListener: ActionListener? = null
-    lateinit var draggableParams: DraggableParamsInfo
 
     //core animator params
     private val ANIMATOR_DURATION = 300L
@@ -36,7 +27,7 @@ class DraggableContainerView : FrameLayout {
     private var mCurrentTranslateX: Float = 0.toFloat()
     private var mCurrentScaleX = 1f
     private var mCurrentScaleY = 1f
-    private var isAutoAnimating = false
+    var isAutoAnimating = false
     private var minScaleXY = 0.3f
     private var maxHeight = 1f
     private var mCurrentWidth: Int = 0
@@ -46,103 +37,50 @@ class DraggableContainerView : FrameLayout {
     private var mDownX: Float = 0f
     private var mDownY: Float = 0f
     private val MAX_TRANSLATE_Y = 500
-
     private var isClickEvent = false
 
-    constructor(context: Context) : super(context) {
-        initView()
+    init {
+        adjustAnimateParams()
     }
 
-    constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet) {
-        initView()
-    }
-
-    private fun initView() {
-
-    }
-
-    fun setScaleChildView(view: View) {
-        if (scaledChildView?.parent != null) {
-            removeView(scaledChildView)
+    private fun adjustAnimateParams() {
+        mCurrentHeight = draggableParams.viewHeight
+        mCurrentWidth = draggableParams.viewWidth
+        mCurrentTranslateX = draggableParams.viewLeft.toFloat()
+        mCurrentTransLateY = draggableParams.viewTop.toFloat()
+        maxHeight = mContainerWidth / draggableParams.contentWHRadio
+        if (maxHeight > mContainerHeight) {
+            maxHeight = mContainerHeight.toFloat()
         }
-        scaledChildView = view
-        addView(scaledChildView)
+        mTargetTranslateY = (mContainerHeight - maxHeight) / 2
     }
 
-    fun setParamsAndStartEnterAnimate(paramsInfo: DraggableParamsInfo) {
-        draggableParams = paramsInfo
-        post {
-            adjustAnimateParams(paramsInfo)
-            enterWithAnimator()
-        }
-    }
-
-    fun setParamsAndStartEnterAnimate(paramsInfo: DraggableParamsInfo, childView: View) {
-        draggableParams = paramsInfo
-        setScaleChildView(childView)
-        post {
-            adjustAnimateParams(paramsInfo)
-            enterWithAnimator()
-        }
-    }
-
-    private fun adjustAnimateParams(paramsInfo: DraggableParamsInfo) {
-        mCurrentHeight = paramsInfo.viewHeight
-        mCurrentWidth = paramsInfo.viewWidth
-        mCurrentTranslateX = paramsInfo.viewLeft.toFloat()
-        mCurrentTransLateY = paramsInfo.viewTop.toFloat()
-        maxHeight = width / paramsInfo.contentWHRadio
-        mTargetTranslateY = (height - maxHeight) / 2
-        Log.d(
-            TAG,
-            "width $width  height $height  mCurrentWidth : $mCurrentWidth  mCurrentHeight : $mCurrentHeight mTargetTranslateY : $mTargetTranslateY maxHeight : $maxHeight"
-        )
-    }
-
-    //child view scale core params
-    private fun changeChildViewAnimateParams() {
-        scaledChildView?.apply {
-            layoutParams = LayoutParams(mCurrentWidth, mCurrentHeight)
-            translationX = mCurrentTranslateX
-            translationY = mCurrentTransLateY
-            scaleX = mCurrentScaleX
-            scaleY = mCurrentScaleY
-        }
-        background = ColorDrawable(Color.argb(mAlpha, 0, 0, 0))
-    }
-
-    private fun changeChildViewDragParams() {
-        scaledChildView?.apply {
-            translationX = mCurrentTranslateX
-            translationY = mCurrentTransLateY
-            scaleX = mCurrentScaleX
-            scaleY = mCurrentScaleY
-        }
-        background = ColorDrawable(Color.argb(mAlpha, 0, 0, 0))
-    }
-
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (isAutoAnimating) return super.dispatchTouchEvent(event)
+    fun dispatchTouchEvent(event: MotionEvent) {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 mDownX = event.x
                 mDownY = event.y
                 isClickEvent = true
             }
+
             MotionEvent.ACTION_MOVE -> {
                 isClickEvent = false
                 if (event.pointerCount == 1) {
-                    //在viewpager中的话， 避免过分拦截事件
-                    val dx = event.x - mDownX
+                    val dx = event.x - mDownX              //在viewpager中的话， 避免过分拦截事件
                     val dy = event.y - mDownY
                     if (Math.abs(dx) > Math.abs(dy)) {
-                        super.dispatchTouchEvent(event)
-                    } else {
-                        if (dy > 0) {
-                            onActionMove(event)
-                        }else{
-                            scaledChildView?.dispatchTouchEvent(event)
-                        }
+                        Log.d(TAG, "横滑不拦截事件...")
+                    }
+
+                    if (dy > 0) {
+                        onActionMove(event)
+//                        if (mGraggableImageViewPhotoView is DraggableChildViewEventRules) {
+//                            if ((mGraggableImageViewPhotoView as DraggableChildViewEventRules).canInterceptEvent()) {
+//                                Log.d(TAG, "子View 允许拦截事件")
+//                                draggableZoomCore?.onActionMove(event)
+//                                return true
+//                            }
+//                        }
                     }
                 }
             }
@@ -152,16 +90,13 @@ class DraggableContainerView : FrameLayout {
                 }
             }
         }
-        return super.dispatchTouchEvent(event)
     }
 
     private fun onActionUp() {
-        Log.d(TAG, "mCurrentTransLateY : $mCurrentTransLateY")
         if (mCurrentScaleY != 1f) {
             if (mCurrentScaleY < 0.5) {
                 exitWithAnimator()
             } else {
-                isClickEvent = false
                 restoreStatusWithAnimator()
             }
         } else {
@@ -173,6 +108,7 @@ class DraggableContainerView : FrameLayout {
     }
 
     private fun onActionMove(event: MotionEvent) {
+        Log.d(TAG, "onActionMove...")
         var offsetY = event.y - mDownY
         val offsetX = event.x - mDownX
 
@@ -196,8 +132,8 @@ class DraggableContainerView : FrameLayout {
             mCurrentScaleY = minScaleXY
         }
 
-        mCurrentWidth = (width * mCurrentScaleX).toInt()
-        mCurrentHeight = (height * mCurrentScaleY).toInt()
+        mCurrentWidth = (mContainerWidth * mCurrentScaleX).toInt()
+        mCurrentHeight = (mContainerHeight * mCurrentScaleY).toInt()
 
         mAlpha = (255 - 255 * percent).toInt()
 
@@ -207,10 +143,10 @@ class DraggableContainerView : FrameLayout {
     /**
      * enter animator
      * */
-    private fun enterWithAnimator() {
+    fun enterWithAnimator() {
         val dx = mCurrentTranslateX - 0
         val dy = mCurrentTransLateY - mTargetTranslateY
-        val dWidth = width - draggableParams.viewWidth
+        val dWidth = mContainerWidth - draggableParams.viewWidth
         val dHeight = maxHeight - draggableParams.viewHeight
         Log.d(TAG, "dx:$dx  dy:$dy  dWidth : $dWidth  dHeight:$dHeight")
         val enterAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
@@ -241,17 +177,24 @@ class DraggableContainerView : FrameLayout {
      * exit animator
      * */
     fun exitWithAnimator() {
-        val scaleWidth = width * mCurrentScaleX
+        val scaleWidth = mContainerWidth * mCurrentScaleX
         val scaleHeight = maxHeight * mCurrentScaleY
-        mCurrentTranslateX += width * (1 - mCurrentScaleX) / 2
+        mCurrentTranslateX += mContainerWidth * (1 - mCurrentScaleX) / 2
         mCurrentTransLateY += maxHeight * (1 - mCurrentScaleY) / 2
         mCurrentScaleX = 1f
         mCurrentScaleY = 1f
 
-        val dx = mCurrentTranslateX - draggableParams.viewLeft
-        val dy = mCurrentTransLateY - draggableParams.viewTop
-        val dWidth = scaleWidth - draggableParams.viewWidth
-        val dHeight = scaleHeight - draggableParams.viewHeight
+        var dx = mCurrentTranslateX - draggableParams.viewLeft
+        var dy = mCurrentTransLateY - draggableParams.viewTop
+        var dWidth = scaleWidth - draggableParams.viewWidth
+        var dHeight = scaleHeight - draggableParams.viewHeight
+
+        if (!draggableParams.isValid()) {
+            dy = 2500f
+            dx = mContainerWidth * 1f / 2
+            dWidth = 0f
+            dHeight = 0f
+        }
 
         val exitAnimator = ValueAnimator.ofFloat(1f, 0f).apply {
             duration = ANIMATOR_DURATION
@@ -319,6 +262,33 @@ class DraggableContainerView : FrameLayout {
             })
         }
         restoreAnimator.start()
+    }
+
+    //child view scale core params
+    private fun changeChildViewAnimateParams() {
+        scaleDraggableView.apply {
+            layoutParams = FrameLayout.LayoutParams(mCurrentWidth, mCurrentHeight)
+            translationX = mCurrentTranslateX
+            translationY = mCurrentTransLateY
+            scaleX = mCurrentScaleX
+            scaleY = mCurrentScaleY
+        }
+        actionListener?.currentAlphaValue(mAlpha)
+    }
+
+    private fun changeChildViewDragParams() {
+        scaleDraggableView.apply {
+            translationX = mCurrentTranslateX
+            translationY = mCurrentTransLateY
+            scaleX = mCurrentScaleX
+            scaleY = mCurrentScaleY
+        }
+        actionListener?.currentAlphaValue(mAlpha)
+    }
+
+    interface ActionListener {
+        fun onExit()
+        fun currentAlphaValue(percent: Int)
     }
 
 }

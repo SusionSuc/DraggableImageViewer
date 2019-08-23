@@ -3,7 +3,7 @@ package com.draggable.library.core
 import java.io.Serializable
 
 /**
- * [DraggableContainerView] 动画参数
+ * [DraggableImageView] 动画参数
  * */
 data class DraggableParamsInfo(
     val viewLeft: Int = 0,
@@ -11,4 +11,6 @@ data class DraggableParamsInfo(
     val viewWidth: Int = 0,
     val viewHeight: Int = 0,
     val contentWHRadio: Float = 1f // 显示内容的宽高比
-) : Serializable
+) : Serializable {
+    fun isValid() = viewWidth != 0 && viewHeight != 0
+}

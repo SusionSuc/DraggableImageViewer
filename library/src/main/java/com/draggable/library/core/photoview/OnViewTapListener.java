@@ -1,4 +1,4 @@
-package com.draggable.library.photoview;
+package com.draggable.library.core.photoview;
 
 import android.view.View;
 
