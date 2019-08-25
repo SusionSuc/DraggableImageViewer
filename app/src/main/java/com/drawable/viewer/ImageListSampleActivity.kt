@@ -21,9 +21,9 @@ class ImageListSampleActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_list_sample)
 
-        loadImage(imags[0].url, mImagesIv1)
-        loadImage(imags[1].url, mImagesIv2)
-        loadImage(imags[2].url, mImagesIv3)
+        loadImage(imags[0].thumbnailUrl, mImagesIv1)
+        loadImage(imags[1].thumbnailUrl, mImagesIv2)
+        loadImage(imags[2].thumbnailUrl, mImagesIv3)
 
         mImagesIv1.setOnClickListener {
             showImages(0)

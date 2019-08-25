@@ -53,7 +53,7 @@ class ImagesViewerActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (!galleryViewer.close()) {
+        if (!galleryViewer.closeWithAnimator()) {
             super.onBackPressed()
         }
     }

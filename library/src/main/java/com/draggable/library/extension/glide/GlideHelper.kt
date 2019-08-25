@@ -33,7 +33,7 @@ object GlideHelper {
     fun imageIsInCache(context: Context, url: String): Boolean {
         try {
             //内存缓存
-//            val image = Glide.with(context).downloadOnly().load(url).apply(RequestOptions().onlyRetrieveFromCache(true)).submit().get()
+//            val image = Glide.with(context).downloadOnly().load(thumbnailUrl).apply(RequestOptions().onlyRetrieveFromCache(true)).submit().get()
 //            if (image != null){
 //                return true
 //            }

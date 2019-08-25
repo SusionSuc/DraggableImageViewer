@@ -128,13 +128,11 @@ class DraggableZoomCore(
         mCurrentScaleX = 1 - percent
         mCurrentScaleY = 1 - percent
 
-        if (mCurrentScaleX <= minScaleXY) {
-            mCurrentScaleX = minScaleXY
-        }
+        if (mCurrentScaleX <= minScaleXY) mCurrentScaleX = minScaleXY
+        if (mCurrentScaleY <= minScaleXY) mCurrentScaleY = minScaleXY
 
-        if (mCurrentScaleY <= minScaleXY) {
-            mCurrentScaleY = minScaleXY
-        }
+        if (mCurrentScaleX > 1) mCurrentScaleX = 1f
+        if (mCurrentScaleY > 1) mCurrentScaleY = 1f
 
         mCurrentWidth = (mContainerWidth * mCurrentScaleX).toInt()
         mCurrentHeight = (mContainerHeight * mCurrentScaleY).toInt()
@@ -158,6 +156,7 @@ class DraggableZoomCore(
             duration = ANIMATOR_DURATION
             addUpdateListener {
                 val percent = it.animatedValue as Float
+                Log.d(TAG, "update ..... percent $percent")
                 mCurrentTranslateX = draggableParams.viewLeft - dx * percent
                 mCurrentTransLateY = draggableParams.viewTop - dy * percent
                 mCurrentWidth = draggableParams.viewWidth + (dWidth * percent).toInt()
@@ -327,7 +326,7 @@ class DraggableZoomCore(
         actionListener?.currentAlphaValue(mAlpha)
     }
 
-    fun adjustView(draggableImageInfo: DraggableImageInfo) {
+    fun adjustScaleViewLocation(draggableImageInfo: DraggableImageInfo) {
         draggableParams = draggableImageInfo.draggableInfo
         maxHeight = mContainerWidth / draggableParams.contentWHRadio
         if (maxHeight > mContainerHeight) {

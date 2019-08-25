@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -16,6 +17,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.draggable.library.Utils
+import com.draggable.library.core.DraggableParamsInfo
 import com.draggable.library.core.DraggableZoomCore
 import com.draggable.library.extension.glide.GlideHelper
 import com.draggable.library.extension.entities.DraggableImageInfo
@@ -62,9 +64,9 @@ class DraggableImageView : FrameLayout {
     private fun initView() {
         LayoutInflater.from(context).inflate(R.layout.view_draggable_simple_image, this)
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-        mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
+        mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
         mDraggableImageViewPhotoView.layoutParams = LayoutParams(0, 0)
-        mDraggableImageViewViewOriginImage.setOnClickListener {
+        mDraggableImageViewPhotoView.setOnClickListener {
             loadImage(draggableImageInfo?.originImg ?: "", mDraggableImageViewPhotoView, true)
         }
         mDraggableImageViewViewDownLoadImage.setOnClickListener {
@@ -81,19 +83,8 @@ class DraggableImageView : FrameLayout {
 
     fun showImageWithAnimator(paramsInfo: DraggableImageInfo) {
         draggableImageInfo = paramsInfo
-
-        val targetUrl: String
-        //如果是wifi网络 or 原图已经加载过则直接加载原图
-        if (GlideHelper.imageIsInCache(context, paramsInfo.originImg) || Utils.isWifiConnected(context)) {
-            targetUrl = paramsInfo.originImg
-            mDraggableImageViewViewOriginImage.visibility = View.GONE
-        } else {
-            targetUrl = paramsInfo.thumbnailImg
-            mDraggableImageViewViewOriginImage.visibility = View.VISIBLE
-        }
-
+        val targetUrl: String = getFinalLoadImageUrl()
         loadImage(targetUrl, mDraggableImageViewPhotoView)
-
         post {
             draggableZoomCore = DraggableZoomCore(
                 paramsInfo.draggableInfo,
@@ -102,7 +93,6 @@ class DraggableImageView : FrameLayout {
                 height,
                 draggableZoomActionListener
             )
-
             val imageHasLoad = GlideHelper.imageIsInCache(context, targetUrl)
             if (imageHasLoad) {
                 draggableZoomCore?.enterWithAnimator() //播放入场动画
@@ -110,11 +100,45 @@ class DraggableImageView : FrameLayout {
         }
     }
 
+    fun showImage(paramsInfo: DraggableImageInfo) {
+        draggableImageInfo = paramsInfo
+        loadImage(getFinalLoadImageUrl(), mDraggableImageViewPhotoView)
+//        if (paramsInfo.draggableInfo.contentWHRadio == DraggableParamsInfo.INVALID_RADIO) {
+//            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
+//        } else {
+//            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
+//        }
+//        mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
+        post {
+            draggableZoomCore = DraggableZoomCore(
+                paramsInfo.draggableInfo,
+                mDraggableImageViewPhotoView,
+                width,
+                height,
+                draggableZoomActionListener
+            )
+            draggableZoomCore?.adjustScaleViewLocation(paramsInfo)
+        }
+    }
+
+    private fun getFinalLoadImageUrl(): String {
+        if (draggableImageInfo == null) return ""
+        val targetUrl: String
+        //如果是wifi网络 or 原图已经加载过则直接加载原图
+        if (GlideHelper.imageIsInCache(context, draggableImageInfo!!.originImg) || Utils.isWifiConnected(context)) {
+            targetUrl = draggableImageInfo!!.originImg
+            mDraggableImageViewViewOriginImage.visibility = View.GONE
+        } else {
+            targetUrl = draggableImageInfo!!.thumbnailImg
+            mDraggableImageViewViewOriginImage.visibility = View.VISIBLE
+        }
+        return targetUrl
+    }
+
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         if (draggableZoomCore?.dispatchTouchEvent(ev) == true) {
             return true
         }
-
         return super.dispatchTouchEvent(ev)
     }
 
@@ -122,7 +146,7 @@ class DraggableImageView : FrameLayout {
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         val isIntercept = super.onInterceptTouchEvent(ev)
 
-        if (mDraggableImageViewPhotoView.scale != 1f){
+        if (mDraggableImageViewPhotoView.scale != 1f) {
             return false
         }
 
@@ -135,6 +159,7 @@ class DraggableImageView : FrameLayout {
     }
 
     private fun loadImage(url: String, imageView: ImageView, isLoadOriginImage: Boolean = false) {
+        Log.d(TAG, "load thumbnailUrl : $url")
         currentLoadUrl = url
         Glide.with(this).load(url)
             .into(object : ImageViewTarget<Drawable>(imageView) {
@@ -142,6 +167,7 @@ class DraggableImageView : FrameLayout {
                     if (resource != null) {
                         setDrawable(resource)
                     }
+//                    mDraggableImageViewPhotoView.setScale(1f, false)
                 }
 
                 override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
@@ -168,7 +194,7 @@ class DraggableImageView : FrameLayout {
             })
     }
 
-    fun close() {
+    fun closeWithAnimator() {
         draggableZoomCore?.exitWithAnimator()
     }
 

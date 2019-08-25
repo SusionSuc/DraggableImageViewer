@@ -9,7 +9,7 @@
     <com.draggable.library.extension.view.HackyViewPager
             android:id="@+id/mImageViewerViewPage"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="match_parent"/>
 
     <TextView
             android:id="@+id/mImageViewerTvIndicator"
@@ -20,7 +20,6 @@
             android:layout_width="match_parent"
             android:layout_height="30dp"/>
 
-
     <ProgressBar
             android:id="@+id/mImageViewerProgress"
             android:visibility="gone"
@@ -29,6 +28,7 @@
             android:layout_height="50dp"/>
 
     <RelativeLayout
+            android:visibility="gone"
             android:layout_margin="18dp"
             android:layout_gravity="bottom"
             android:layout_height="wrap_content"

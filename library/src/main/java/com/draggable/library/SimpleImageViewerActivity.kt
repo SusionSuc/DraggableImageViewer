@@ -49,7 +49,7 @@ class SimpleImageViewerActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        draggableImageView.close()
+        draggableImageView.closeWithAnimator()
     }
 
 }

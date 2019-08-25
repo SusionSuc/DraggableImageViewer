@@ -1,9 +1,7 @@
 package com.draggable.library.core
 
 import android.content.Context
-import android.graphics.ImageDecoder
 import android.graphics.Rect
-import android.util.Log
 import android.view.View
 import com.draggable.library.ImagesViewerActivity
 import com.draggable.library.SimpleImageViewerActivity
@@ -12,7 +10,7 @@ import com.draggable.library.extension.entities.DraggableImageInfo
 
 object DraggableViewerHelper {
 
-    class ImageInfo(val url: String, val originUrl: String = "", val whRadio: Float = DEFAULT_RADDIO) {
+    class ImageInfo(val thumbnailUrl: String, val originUrl: String = "", val whRadio: Float = DEFAULT_RADDIO) {
         companion object {
             const val DEFAULT_RADDIO = 1f
         }
@@ -46,12 +44,12 @@ object DraggableViewerHelper {
                     createImageDraggableParamsWithWHRadio(
                         views[index],
                         getValidWhRadio(imageInfo.whRadio, views[index]),
-                        imageInfo.url,
-                        imageInfo.url
+                        imageInfo.thumbnailUrl,
+                        imageInfo.thumbnailUrl
                     )
                 )
             } else {
-                draggableImageInfos.add(DraggableImageInfo(imageInfo.url, imageInfo.url))
+                draggableImageInfos.add(DraggableImageInfo(imageInfo.thumbnailUrl, imageInfo.thumbnailUrl))
             }
         }
         ImagesViewerActivity.start(context, draggableImageInfos, index)

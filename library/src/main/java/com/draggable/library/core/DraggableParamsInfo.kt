@@ -13,4 +13,8 @@ data class DraggableParamsInfo(
     val contentWHRadio: Float = 1f // 显示内容的宽高比
 ) : Serializable {
     fun isValid() = viewWidth != 0 && viewHeight != 0
+
+    companion object {
+        const val INVALID_RADIO = -1f
+    }
 }
