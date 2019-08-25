@@ -28,4 +28,30 @@
             android:layout_width="50dp"
             android:layout_height="50dp"/>
 
+    <RelativeLayout
+            android:layout_margin="18dp"
+            android:layout_gravity="bottom"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent">
+
+        <TextView
+                android:id="@+id/mImageGalleryViewOriginImage"
+                android:padding="6dp"
+                android:background="@drawable/bg_view_origin_image"
+                android:textColor="#ffffff"
+                android:text="查看原图"
+                android:layout_centerInParent="true"
+                android:textSize="14dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ImageView
+                android:id="@+id/mImageGalleryViewOriginDownloadImg"
+                android:src="@drawable/icon_down_image"
+                android:layout_alignParentRight="true"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+
+    </RelativeLayout>
+
 </merge>

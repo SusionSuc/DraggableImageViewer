@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.ViewGroup
 import com.draggable.library.extension.entities.DraggableImageInfo
-import com.draggable.library.extension.view.ImageGalleryViewer
+import com.draggable.library.extension.view.DraggableImageGalleryViewer
 
 //查看多图
 class ImagesViewerActivity : AppCompatActivity() {
@@ -27,10 +27,10 @@ class ImagesViewerActivity : AppCompatActivity() {
     }
 
     private val galleryViewer by lazy {
-        ImageGalleryViewer(this).apply {
+        DraggableImageGalleryViewer(this).apply {
             layoutParams =
                 ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            actionListener = object : ImageGalleryViewer.ActionListener {
+            actionListener = object : DraggableImageGalleryViewer.ActionListener {
                 override fun closeViewer() {
                     finish()
                     overridePendingTransition(0, 0)
@@ -53,7 +53,8 @@ class ImagesViewerActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
+        if (!galleryViewer.close()) {
+            super.onBackPressed()
+        }
     }
-
 }

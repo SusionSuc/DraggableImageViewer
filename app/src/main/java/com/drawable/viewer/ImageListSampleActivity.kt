@@ -31,12 +31,12 @@ class ImageListSampleActivity : AppCompatActivity() {
 
 
         mImagesIv2.setOnClickListener {
-            showImages(0)
+            showImages(1)
         }
 
 
         mImagesIv3.setOnClickListener {
-            showImages(0)
+            showImages(2)
         }
     }
 

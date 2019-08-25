@@ -3,12 +3,9 @@ package com.draggable.library
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.ImageViewTarget
 import com.draggable.library.extension.view.DraggableImageView
 import com.draggable.library.extension.entities.DraggableImageInfo
 
@@ -47,7 +44,7 @@ class SimpleImageViewerActivity : AppCompatActivity() {
         setContentView(draggableImageView)
         val info = intent.getSerializableExtra(PARAMS) as? DraggableImageInfo
         if (info != null) {
-            draggableImageView.enterWithAnimator(info, true)
+            draggableImageView.showImageWithAnimator(info)
         }
     }
 
