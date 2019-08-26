@@ -1,6 +1,8 @@
 package com.draggable.library.core
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -62,7 +64,7 @@ class DraggableImageView : FrameLayout {
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
         mDraggableImageViewPhotoView.setOnClickListener {
-            loadImage(draggableImageInfo?.originImg ?: "", mDraggableImageViewPhotoView, true)
+            loadImage(draggableImageInfo?.originImg ?: "", true)
         }
         mDraggableImageViewViewDownLoadImage.setOnClickListener {
             GlideHelper.downloadPicture(context, currentLoadUrl)
@@ -85,7 +87,7 @@ class DraggableImageView : FrameLayout {
         }
 
         val targetUrl: String = getFinalLoadImageUrl()
-        loadImage(targetUrl, mDraggableImageViewPhotoView)
+        loadImage(targetUrl)
         post {
             draggableZoomCore = DraggableZoomCore(
                 paramsInfo.draggableInfo,
@@ -104,7 +106,7 @@ class DraggableImageView : FrameLayout {
 
     fun showImage(paramsInfo: DraggableImageInfo) {
         draggableImageInfo = paramsInfo
-        loadImage(getFinalLoadImageUrl(), mDraggableImageViewPhotoView)
+        loadImage(getFinalLoadImageUrl())
 
         if (paramsInfo.draggableInfo.isValid()) {
             mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
@@ -161,14 +163,14 @@ class DraggableImageView : FrameLayout {
         return super.onTouchEvent(event)
     }
 
-    private fun loadImage(url: String, imageView: ImageView, isLoadOriginImage: Boolean = false) {
-        Log.d(TAG, "load thumbnailUrl : $url")
+    private fun loadImage(url: String, isLoadOriginImage: Boolean = false) {
         currentLoadUrl = url
-        Glide.with(this).load(url)
-            .into(object : ImageViewTarget<Drawable>(imageView) {
+        Glide.with(this)
+            .load(url)
+            .into(object : ImageViewTarget<Drawable>(mDraggableImageViewPhotoView) {
                 override fun setResource(resource: Drawable?) {
                     if (resource != null) {
-                        setDrawable(resource)
+                        mDraggableImageViewPhotoView.setImageBitmap(translateToFixedBitmap(resource))
                     }
                 }
 
@@ -196,6 +198,45 @@ class DraggableImageView : FrameLayout {
             })
     }
 
+    private fun translateToFixedBitmap(originDrawable: Drawable): Bitmap? {
+        val whRadio = originDrawable.intrinsicWidth * 1f / originDrawable.intrinsicHeight
+
+        var bpWidth = originDrawable.intrinsicWidth
+        var bpHeight = originDrawable.intrinsicHeight
+
+        when {
+            whRadio < 1 && bpWidth > this@DraggableImageView.width -> { //宽图
+                bpWidth = this@DraggableImageView.width
+            }
+
+            whRadio > 1 && bpHeight > this@DraggableImageView.height -> { //长图
+                bpWidth = this@DraggableImageView.width
+            }
+        }
+
+        bpHeight = (bpWidth * 1f / whRadio).toInt()
+
+        Log.d(TAG, "bpWidth : $bpWidth  bpHeight : $bpHeight")
+
+        val glideBitmapPool = Glide.get(context).bitmapPool
+        var bp = glideBitmapPool.get(
+            bpWidth,
+            bpHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        if (bp == null) {
+            bp = Bitmap.createBitmap(
+                bpWidth,
+                bpHeight,
+                Bitmap.Config.ARGB_8888
+            )
+        }
+
+        val canvas = Canvas(bp)
+        originDrawable.setBounds(0, 0, bpWidth, bpHeight)
+        originDrawable.draw(canvas)
+        return bp
+    }
 
     fun setDownLoadBtnVisiable(visiable: Boolean) {
         mDraggableImageViewViewDownLoadImage.visibility = if (visiable) View.VISIBLE else View.GONE

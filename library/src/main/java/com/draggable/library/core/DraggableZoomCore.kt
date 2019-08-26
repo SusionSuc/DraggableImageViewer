@@ -137,6 +137,11 @@ class DraggableZoomCore(
         if (percent > 1) {
             percent = 1f
         }
+        if (percent < 0) {
+            percent = 0f
+        }
+
+        Log.d(TAG, "percent : $percent")
 
         mCurrentTransLateY = mTargetTranslateY + offsetY
         mCurrentTranslateX = offsetX
@@ -152,6 +157,7 @@ class DraggableZoomCore(
 
         mCurrentWidth = (mContainerWidth * mCurrentScaleX).toInt()
         mCurrentHeight = (mContainerHeight * mCurrentScaleY).toInt()
+
 
         mAlpha = (255 - 255 * percent).toInt()
 
