@@ -2,6 +2,7 @@ package com.draggable.library.core
 
 import android.content.Context
 import android.graphics.Rect
+import android.util.Log
 import android.view.View
 import com.draggable.library.ImagesViewerActivity
 import com.draggable.library.SimpleImageViewerActivity
@@ -9,6 +10,8 @@ import com.draggable.library.core.DraggableViewerHelper.ImageInfo.Companion.DEFA
 import com.draggable.library.extension.entities.DraggableImageInfo
 
 object DraggableViewerHelper {
+
+    private val TAG = javaClass.simpleName
 
     class ImageInfo(val thumbnailUrl: String, val originUrl: String = "", val whRadio: Float = DEFAULT_RADDIO) {
         companion object {
@@ -99,12 +102,13 @@ object DraggableViewerHelper {
             view.getLocationInWindow(location)
             val windowRect = Rect()
             view.getWindowVisibleDisplayFrame(windowRect)
-            val top = location[1] - windowRect.top + getStatusBarHeight(view.context)
+            val top = location[1]
             draggableInfo = DraggableImageInfo(
                 originUrl,
                 thumbUrl,
                 DraggableParamsInfo(
-                    location[0], top,
+                    location[0],
+                    top,
                     view.width,
                     view.height,
                     whRadio
@@ -116,10 +120,5 @@ object DraggableViewerHelper {
 
         return draggableInfo
     }
-
-    private fun getStatusBarHeight(context: Context): Int {
-        val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
-        return context.resources.getDimensionPixelSize(resourceId)
-    }
-
+    
 }
