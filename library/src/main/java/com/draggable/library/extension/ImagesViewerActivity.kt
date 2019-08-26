@@ -1,4 +1,4 @@
-package com.draggable.library
+package com.draggable.library.extension
 
 import android.app.Activity
 import android.content.Context

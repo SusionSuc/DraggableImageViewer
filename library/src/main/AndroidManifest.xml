@@ -5,12 +5,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <application>
 
-        <activity android:name="com.draggable.library.ImagesViewerActivity"
+        <activity android:name="com.draggable.library.extension.ImagesViewerActivity"
                   android:theme="@style/DraggableTranslucentTheme">
         </activity>
 
         <activity
-                android:name="com.draggable.library.SimpleImageViewerActivity"
+                android:name="com.draggable.library.extension.SimpleImageViewerActivity"
                 android:theme="@style/DraggableTranslucentTheme">
         </activity>
 

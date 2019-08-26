@@ -1,4 +1,4 @@
-package com.draggable.library
+package com.draggable.library.extension
 
 import android.app.Activity
 import android.content.Context
@@ -14,7 +14,6 @@ class SimpleImageViewerActivity : AppCompatActivity() {
 
     companion object {
         private const val PARAMS = "params"
-        private const val IMAGE_URL = "image_url"
         fun start(context: Context, draggableInfo: DraggableImageInfo) {
             val intent = Intent(context, SimpleImageViewerActivity::class.java)
             intent.putExtra(PARAMS, draggableInfo)

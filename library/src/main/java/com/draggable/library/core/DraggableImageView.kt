@@ -16,7 +16,7 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.transition.Transition
-import com.draggable.library.Utils
+import com.draggable.library.extension.Utils
 import com.draggable.library.extension.glide.GlideHelper
 import com.draggable.library.extension.entities.DraggableImageInfo
 import com.drawable.library.R

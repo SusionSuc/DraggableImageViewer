@@ -2,10 +2,8 @@ package com.drawable.viewer
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.ImageView
 import com.bumptech.glide.Glide
-import com.draggable.library.SimpleImageViewerActivity
 import com.draggable.library.core.DraggableViewerHelper
 import kotlinx.android.synthetic.main.activity_sample_simple_image.*
 

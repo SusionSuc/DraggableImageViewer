@@ -1,4 +1,4 @@
-package com.draggable.library
+package com.draggable.library.extension
 
 import android.annotation.TargetApi
 import android.app.Activity

@@ -2,10 +2,9 @@ package com.draggable.library.core
 
 import android.content.Context
 import android.graphics.Rect
-import android.util.Log
 import android.view.View
-import com.draggable.library.ImagesViewerActivity
-import com.draggable.library.SimpleImageViewerActivity
+import com.draggable.library.extension.ImagesViewerActivity
+import com.draggable.library.extension.SimpleImageViewerActivity
 import com.draggable.library.core.DraggableViewerHelper.ImageInfo.Companion.DEFAULT_RADDIO
 import com.draggable.library.extension.entities.DraggableImageInfo
 
@@ -120,5 +119,5 @@ object DraggableViewerHelper {
 
         return draggableInfo
     }
-    
+
 }
