@@ -12,7 +12,7 @@
             android:textSize="16dp"
             android:textStyle="bold"
             android:gravity="center"
-            android:text="单张图片浏览"
+            android:text="单张图片浏览(缩放进入)"
             android:id="@+id/mTvSimpleImage"
             android:background="#f2f2f2"
             android:layout_width="match_parent"
@@ -25,8 +25,20 @@
             android:textSize="16dp"
             android:textStyle="bold"
             android:gravity="center"
-            android:text="多张图片浏览"
+            android:text="多张图片浏览(缩放进入)"
             android:id="@+id/mTvMutilImage"
+            android:background="#f2f2f2"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"/>
+
+    <TextView
+            android:layout_marginTop="40dp"
+            android:textColor="#000000"
+            android:textSize="16dp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:text="普通图片浏览"
+            android:id="@+id/mTvNormalImage"
             android:background="#f2f2f2"
             android:layout_width="match_parent"
             android:layout_height="40dp"/>

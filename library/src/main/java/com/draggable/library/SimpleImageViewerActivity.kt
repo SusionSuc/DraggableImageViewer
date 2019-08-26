@@ -6,7 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import com.draggable.library.extension.view.DraggableImageView
+import com.draggable.library.core.DraggableImageView
 import com.draggable.library.extension.entities.DraggableImageInfo
 
 //查看单张图片
@@ -29,7 +29,7 @@ class SimpleImageViewerActivity : AppCompatActivity() {
         DraggableImageView(this).apply {
             layoutParams =
                 ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            actionListenr = object : DraggableImageView.ActionListener {
+            actionListener = object : DraggableImageView.ActionListener {
                 override fun onExit() {
                     finish()
                     overridePendingTransition(0, 0)

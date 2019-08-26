@@ -1,13 +1,11 @@
-package com.draggable.library.extension.view
+package com.draggable.library.core
 
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -17,8 +15,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.draggable.library.Utils
-import com.draggable.library.core.DraggableParamsInfo
-import com.draggable.library.core.DraggableZoomCore
 import com.draggable.library.extension.glide.GlideHelper
 import com.draggable.library.extension.entities.DraggableImageInfo
 import com.drawable.library.R
@@ -39,7 +35,7 @@ class DraggableImageView : FrameLayout {
 
     private val TAG = javaClass.simpleName
     private var draggableImageInfo: DraggableImageInfo? = null
-    var actionListenr: ActionListener? = null
+    var actionListener: ActionListener? = null
     private var currentLoadUrl = ""
 
     private var draggableZoomActionListener = object : DraggableZoomCore.ActionListener {
@@ -48,7 +44,7 @@ class DraggableImageView : FrameLayout {
         }
 
         override fun onExit() {
-            actionListenr?.onExit()
+            actionListener?.onExit()
         }
     }
     private var draggableZoomCore: DraggableZoomCore? = null
@@ -65,7 +61,6 @@ class DraggableImageView : FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.view_draggable_simple_image, this)
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
-        mDraggableImageViewPhotoView.layoutParams = LayoutParams(0, 0)
         mDraggableImageViewPhotoView.setOnClickListener {
             loadImage(draggableImageInfo?.originImg ?: "", mDraggableImageViewPhotoView, true)
         }
@@ -83,16 +78,23 @@ class DraggableImageView : FrameLayout {
 
     fun showImageWithAnimator(paramsInfo: DraggableImageInfo) {
         draggableImageInfo = paramsInfo
+
+        if (!paramsInfo.draggableInfo.isValid()) {
+            showImage(paramsInfo)
+            return
+        }
+
         val targetUrl: String = getFinalLoadImageUrl()
         loadImage(targetUrl, mDraggableImageViewPhotoView)
         post {
             draggableZoomCore = DraggableZoomCore(
                 paramsInfo.draggableInfo,
-                mDraggableImageViewPhotoView,
+                mDraggableImageViewScaledView,
                 width,
                 height,
                 draggableZoomActionListener
             )
+            draggableZoomCore?.adjustScaleViewToInitLocation()
             val imageHasLoad = GlideHelper.imageIsInCache(context, targetUrl)
             if (imageHasLoad) {
                 draggableZoomCore?.enterWithAnimator() //播放入场动画
@@ -103,21 +105,22 @@ class DraggableImageView : FrameLayout {
     fun showImage(paramsInfo: DraggableImageInfo) {
         draggableImageInfo = paramsInfo
         loadImage(getFinalLoadImageUrl(), mDraggableImageViewPhotoView)
-//        if (paramsInfo.draggableInfo.contentWHRadio == DraggableParamsInfo.INVALID_RADIO) {
-//            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
-//        } else {
-//            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
-//        }
-//        mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
+
+        if (paramsInfo.draggableInfo.isValid()) {
+            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
+        } else {
+            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
+        }
+
         post {
             draggableZoomCore = DraggableZoomCore(
                 paramsInfo.draggableInfo,
-                mDraggableImageViewPhotoView,
+                mDraggableImageViewScaledView,
                 width,
                 height,
                 draggableZoomActionListener
             )
-            draggableZoomCore?.adjustScaleViewLocation(paramsInfo)
+            draggableZoomCore?.adjustScaleViewToCorrectLocation()
         }
     }
 
@@ -167,7 +170,6 @@ class DraggableImageView : FrameLayout {
                     if (resource != null) {
                         setDrawable(resource)
                     }
-//                    mDraggableImageViewPhotoView.setScale(1f, false)
                 }
 
                 override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
@@ -192,6 +194,15 @@ class DraggableImageView : FrameLayout {
                     }
                 }
             })
+    }
+
+
+    fun setDownLoadBtnVisiable(visiable: Boolean) {
+        mDraggableImageViewViewDownLoadImage.visibility = if (visiable) View.VISIBLE else View.GONE
+    }
+
+    fun setViewOriginImageBtnVisible(visiable: Boolean) {
+        mDraggableImageViewViewOriginImage.visibility = if (visiable) View.VISIBLE else View.GONE
     }
 
     fun closeWithAnimator() {

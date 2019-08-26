@@ -5,10 +5,19 @@
        android:layout_height="match_parent"
        tools:parentTag="android.widget.FrameLayout">
 
-    <com.draggable.library.core.photoview.PhotoView
-            android:id="@+id/mDraggableImageViewPhotoView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+
+    <FrameLayout
+            android:id="@+id/mDraggableImageViewScaledView"
+            android:layout_width="0dp"
+            android:layout_height="0dp">
+
+        <com.draggable.library.core.photoview.PhotoView
+                android:id="@+id/mDraggableImageViewPhotoView"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </FrameLayout>
 
     <RelativeLayout
             android:layout_margin="18dp"

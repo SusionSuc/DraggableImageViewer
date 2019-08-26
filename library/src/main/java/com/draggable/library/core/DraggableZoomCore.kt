@@ -4,25 +4,21 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.util.Log
-import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import com.draggable.library.extension.entities.DraggableImageInfo
 
 /**
  * 把一个View 从一个地方移动到另一个地方 & 伴随缩放事件。
- *
  * */
 class DraggableZoomCore(
-    var draggableParams: DraggableParamsInfo,
-    val scaleDraggableView: View,
-    val mContainerWidth: Int,
-    val mContainerHeight: Int,
+    private var draggableParams: DraggableParamsInfo,
+    private val scaleDraggableView: View,
+    private val mContainerWidth: Int,
+    private val mContainerHeight: Int,
     val actionListener: ActionListener? = null
 ) {
 
     private val TAG = javaClass.simpleName
-
     //core animator params
     private val ANIMATOR_DURATION = 300L
     private var mAlpha = 0
@@ -42,20 +38,40 @@ class DraggableZoomCore(
     private var mDownY: Float = 0f
     private val MAX_TRANSLATE_Y = 1500
 
-    init {
-        adjustAnimateParams()
+    fun adjustScaleViewToInitLocation() {
+        if (draggableParams.isValid()) {
+            mCurrentHeight = draggableParams.viewHeight
+            mCurrentWidth = draggableParams.viewWidth
+            mCurrentTranslateX = draggableParams.viewLeft.toFloat()
+            mCurrentTransLateY = draggableParams.viewTop.toFloat()
+            maxHeight = mContainerWidth / draggableParams.scaledViewWhRadio
+            if (maxHeight > mContainerHeight) {
+                maxHeight = mContainerHeight.toFloat()
+            }
+            mTargetTranslateY = (mContainerHeight - maxHeight) / 2
+        }
     }
 
-    private fun adjustAnimateParams() {
-        mCurrentHeight = draggableParams.viewHeight
-        mCurrentWidth = draggableParams.viewWidth
-        mCurrentTranslateX = draggableParams.viewLeft.toFloat()
-        mCurrentTransLateY = draggableParams.viewTop.toFloat()
-        maxHeight = mContainerWidth / draggableParams.contentWHRadio
-        if (maxHeight > mContainerHeight) {
-            maxHeight = mContainerHeight.toFloat()
+    fun adjustScaleViewToCorrectLocation() {
+        if (draggableParams.isValid()) {
+            maxHeight = mContainerWidth / draggableParams.scaledViewWhRadio
+            if (maxHeight > mContainerHeight) {
+                maxHeight = mContainerHeight.toFloat()
+            }
+            mCurrentHeight = maxHeight.toInt()
+            mCurrentWidth = mContainerWidth
+            mCurrentTranslateX = 0f
+            mCurrentTransLateY = (mContainerHeight - maxHeight) / 2
+            mTargetTranslateY = mCurrentTransLateY
+        } else {
+            mCurrentWidth = mContainerWidth
+            mCurrentHeight = mContainerHeight
+            mCurrentTranslateX = 0f
+            mCurrentTransLateY = 0f
+            mTargetTranslateY = 0f
         }
-        mTargetTranslateY = (mContainerHeight - maxHeight) / 2
+        mAlpha = 255
+        changeChildViewAnimateParams()
     }
 
     fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -324,21 +340,6 @@ class DraggableZoomCore(
             scaleY = mCurrentScaleY
         }
         actionListener?.currentAlphaValue(mAlpha)
-    }
-
-    fun adjustScaleViewLocation(draggableImageInfo: DraggableImageInfo) {
-        draggableParams = draggableImageInfo.draggableInfo
-        maxHeight = mContainerWidth / draggableParams.contentWHRadio
-        if (maxHeight > mContainerHeight) {
-            maxHeight = mContainerHeight.toFloat()
-        }
-        mCurrentHeight = maxHeight.toInt()
-        mCurrentWidth = mContainerWidth
-        mCurrentTranslateX = 0f
-        mCurrentTransLateY = (mContainerHeight - maxHeight) / 2
-        mTargetTranslateY = mCurrentTransLateY
-        mAlpha = 255
-        changeChildViewAnimateParams()
     }
 
     interface ActionListener {

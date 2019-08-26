@@ -24,13 +24,21 @@ class MainActivity : AppCompatActivity() {
 
         mTvMutilImage.setOnClickListener {
             startActivity(Intent(this, ImageListSampleActivity::class.java))
+        }
 
+        mTvNormalImage.setOnClickListener {
+            startActivity(Intent(this, NormalImageActivity::class.java))
         }
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, 1);
             }
         }
     }
+
 }

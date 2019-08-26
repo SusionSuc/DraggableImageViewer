@@ -9,18 +9,13 @@ import android.os.Environment
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
-import androidx.annotation.Nullable
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.disklrucache.DiskLruCache
 import com.bumptech.glide.load.engine.cache.DiskCache
 import com.bumptech.glide.load.engine.cache.SafeKeyGenerator
 import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.request.Request
 import com.bumptech.glide.request.transition.Transition
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Scheduler
-import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.*
 import java.nio.channels.FileChannel
 
@@ -55,7 +50,6 @@ object GlideHelper {
     }
 
     fun downloadPicture(context: Context, url: String) {
-
         if (ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE

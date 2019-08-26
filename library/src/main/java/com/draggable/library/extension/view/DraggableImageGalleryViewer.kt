@@ -7,6 +7,7 @@ import android.view.*
 import android.widget.FrameLayout
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.draggable.library.core.DraggableImageView
 import com.draggable.library.extension.entities.DraggableImageInfo
 import com.draggable.library.extension.glide.GlideHelper
 import com.drawable.library.R
@@ -100,11 +101,12 @@ class DraggableImageGalleryViewer(context: Context) : FrameLayout(context) {
 
         if (availableImageView == null) {
             availableImageView = DraggableImageView(context).apply {
-                actionListenr = object : DraggableImageView.ActionListener {
+                actionListener = object : DraggableImageView.ActionListener {
                     override fun onExit() {
                         this@DraggableImageGalleryViewer.actionListener?.closeViewer()
                     }
                 }
+                setDownLoadBtnVisiable(false)
             }
             vpContentViewList.add(availableImageView!!)
         }

@@ -46,7 +46,7 @@ class SimpleImageSampleActivity : AppCompatActivity() {
 
         sampleViews.forEach { sampleInfo ->
             sampleInfo.view.setOnClickListener {
-                DraggableViewerHelper.showSimpleImage(this, sampleInfo.view, sampleInfo.url, sampleInfo.whRadio)
+                DraggableViewerHelper.showSimpleImage(this, sampleInfo.url, sampleInfo.view, sampleInfo.whRadio)
             }
             loadImage(sampleInfo.url, sampleInfo.view)
         }

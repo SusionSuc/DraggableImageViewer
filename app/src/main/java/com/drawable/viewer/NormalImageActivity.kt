@@ -1,13 +1,13 @@
 package com.drawable.viewer
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.draggable.library.core.DraggableViewerHelper
-import kotlinx.android.synthetic.main.activity_image_list_sample.*
+import kotlinx.android.synthetic.main.activity_normal_image.*
 
-class ImageListSampleActivity : AppCompatActivity() {
+class NormalImageActivity : AppCompatActivity() {
 
     private val imags = ArrayList<DraggableViewerHelper.ImageInfo>().apply {
         add(DraggableViewerHelper.ImageInfo("https://upload-bbs.mihoyo.com/upload/2019/08/21/73766616/4d09b6b94491d3921344be906aa7971a_4136353673894269217.png"))
@@ -20,35 +20,23 @@ class ImageListSampleActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_image_list_sample)
+        setContentView(R.layout.activity_normal_image)
 
         loadImage(imags[0].thumbnailUrl, mImagesIv1)
         loadImage(imags[1].thumbnailUrl, mImagesIv2)
         loadImage(imags[2].thumbnailUrl, mImagesIv3)
 
         mImagesIv1.setOnClickListener {
-            showImages(0)
+            DraggableViewerHelper.showSimpleImage(this, imags[0].thumbnailUrl)
         }
 
         mImagesIv2.setOnClickListener {
-            showImages(1)
+            DraggableViewerHelper.showSimpleImage(this, imags[1].thumbnailUrl)
         }
 
         mImagesIv3.setOnClickListener {
-            showImages(2)
+            DraggableViewerHelper.showSimpleImage(this, imags[2].thumbnailUrl)
         }
-
-        mTvShow4.setOnClickListener {
-            showImages(3)
-        }
-
-        mTvShowLast.setOnClickListener {
-            showImages(imags.size - 1)
-        }
-    }
-
-    private fun showImages(index: Int) {
-        DraggableViewerHelper.showImages(this, listOf(mImagesIv1, mImagesIv2, mImagesIv3), imags, index)
     }
 
     private fun loadImage(url: String, iv: ImageView) {
@@ -56,5 +44,4 @@ class ImageListSampleActivity : AppCompatActivity() {
             .load(url)
             .into(iv)
     }
-
 }
