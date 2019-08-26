@@ -126,6 +126,10 @@ class DraggableZoomCore(
                         } else {
                             restoreStatusWithAnimator()
                         }
+                    } else {
+                        if (mCurrentTransLateY != mTargetTranslateY) {
+                            restoreStatusWithAnimator()
+                        }
                     }
                 }
             }
@@ -283,6 +287,7 @@ class DraggableZoomCore(
     //用户没有触发拖拽退出，还原状态
     private fun restoreStatusWithAnimator() {
 
+        Log.d(TAG, "mCurrentTranslateX : $mCurrentTranslateX  mCurrentTransLateY : $mCurrentTransLateY")
         val initAlpha = mAlpha
         val dyAlpha = 255 - mAlpha
 
@@ -303,11 +308,9 @@ class DraggableZoomCore(
                 val percent = it.animatedValue as Float
                 mCurrentTransLateY = initY + (dy * percent)
                 mCurrentTranslateX = initX + (dx * percent)
-
                 mCurrentScaleY = initScaleY + (dScaleY * percent)
                 mCurrentScaleX = initScaleX + (dScaleX * percent)
                 mAlpha = initAlpha + (dyAlpha * percent).toInt()
-
                 changeChildViewDragParams()
             }
             addListener(object : AnimatorListenerAdapter() {

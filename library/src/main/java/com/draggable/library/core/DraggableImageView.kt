@@ -150,11 +150,9 @@ class DraggableImageView : FrameLayout {
     //是否可以拦截事件
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         val isIntercept = super.onInterceptTouchEvent(ev)
-
         if (mDraggableImageViewPhotoView.scale != 1f) {
             return false
         }
-
         return draggableZoomCore?.onInterceptTouchEvent(isIntercept, ev) ?: false
     }
 
