@@ -23,7 +23,7 @@ android {
 
 dependencies {
 
-    api project(":library")
+    api project(":dragable_image_viewer")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.21"
     implementation "com.android.support:appcompat-v7:28.0.0"

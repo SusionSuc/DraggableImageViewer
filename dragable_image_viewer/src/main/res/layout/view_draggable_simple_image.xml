@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
+       android:orientation="vertical"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       tools:parentTag="android.widget.FrameLayout">
+
+
+    <FrameLayout
+            android:id="@+id/mDraggableImageViewScaledView"
+            android:layout_width="0dp"
+            android:layout_height="0dp">
+
+        <com.draggable.library.core.photoview.PhotoView
+                android:id="@+id/mDraggableImageViewPhotoView"
+                android:layout_gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+    </FrameLayout>
+
+    <RelativeLayout
+            android:layout_margin="18dp"
+            android:layout_gravity="bottom"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent">
+
+        <TextView
+                android:id="@+id/mDraggableImageViewViewOriginImage"
+                android:padding="6dp"
+                android:background="@drawable/bg_view_origin_image"
+                android:textColor="#ffffff"
+                android:text="查看原图"
+                android:layout_centerInParent="true"
+                android:textSize="14dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+
+    <ProgressBar
+            android:id="@+id/mDraggableImageViewViewOProgressBar"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:layout_height="50dp"
+            android:layout_width="50dp"/>
+
+</merge>
