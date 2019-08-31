@@ -82,6 +82,7 @@ object GlideHelper {
 
     //图片是否在 内存缓存 or  磁盘缓存
     fun imageIsInCache(context: Context, url: String): Boolean {
+        if (url.isEmpty())return false
         try {
             //磁盘缓存
             val safeKeyGenerator = SafeKeyGenerator()
@@ -95,7 +96,6 @@ object GlideHelper {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
         return false
     }
 

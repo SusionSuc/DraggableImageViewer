@@ -16,31 +16,69 @@ object DraggableImageViewerHelper {
         val imgSize: Long = 0
     )
 
-    fun showSimpleImage(context: Context, url: String, thumbUrl: String = "", view: View?, showDownLoadBtn: Boolean = true) {
-        showImages(context, if (view == null) null else listOf(view), listOf(ImageInfo(thumbUrl, url)),showDownLoadBtn = showDownLoadBtn)
+    fun showSimpleImage(
+        context: Context,
+        url: String,
+        thumbUrl: String = "",
+        view: View? = null,
+        showDownLoadBtn: Boolean = true
+    ) {
+        showImages(
+            context,
+            if (view == null) null else listOf(view),
+            listOf(ImageInfo(thumbUrl, url)),
+            showDownLoadBtn = showDownLoadBtn
+        )
     }
 
-    fun showImages(context: Context, images: List<String>, index: Int = 0, showDownLoadBtn: Boolean = true) {
+    fun showImages(
+        context: Context,
+        images: List<String>,
+        index: Int = 0,
+        showDownLoadBtn: Boolean = true
+    ) {
         val imgInfos = ArrayList<ImageInfo>()
         images.forEach {
             imgInfos.add(ImageInfo(it, it))
         }
-        showImages(context, null, imgInfos, index,showDownLoadBtn)
+        showImages(context, null, imgInfos, index, showDownLoadBtn)
     }
 
-    fun showSimpleImage(context: Context, imgInfo: ImageInfo, view: View? = null, showDownLoadBtn: Boolean = true) {
-        showImages(context, if (view == null) null else listOf(view), listOf(imgInfo),showDownLoadBtn = showDownLoadBtn)
+    fun showSimpleImage(
+        context: Context,
+        imgInfo: ImageInfo,
+        view: View? = null,
+        showDownLoadBtn: Boolean = true
+    ) {
+        showImages(
+            context,
+            if (view == null) null else listOf(view),
+            listOf(imgInfo),
+            showDownLoadBtn = showDownLoadBtn
+        )
     }
 
-    fun showImages(context: Context, imgs: List<String>, index: Int = 0, views: List<View>?, showDownLoadBtn: Boolean = true) {
+    fun showImages(
+        context: Context,
+        imgs: List<String>,
+        index: Int = 0,
+        views: List<View>?,
+        showDownLoadBtn: Boolean = true
+    ) {
         val imgInfos = ArrayList<ImageInfo>()
         imgs.forEach {
             imgInfos.add(ImageInfo(it, it))
         }
-        showImages(context, views, imgInfos, index,showDownLoadBtn)
+        showImages(context, views, imgInfos, index, showDownLoadBtn)
     }
 
-    fun showImages(context: Context, views: List<View>?, imgInfos: List<ImageInfo>, index: Int = 0,showDownLoadBtn: Boolean = true ) {
+    fun showImages(
+        context: Context,
+        views: List<View>?,
+        imgInfos: List<ImageInfo>,
+        index: Int = 0,
+        showDownLoadBtn: Boolean = true
+    ) {
         if (imgInfos.isEmpty()) return
         //多张图片开启复杂的方式显示
         val draggableImageInfos = ArrayList<DraggableImageInfo>()
@@ -57,11 +95,12 @@ object DraggableImageViewerHelper {
                 )
             } else {
                 draggableImageInfos.add(
-                    DraggableImageInfo(
+                    createImageDraggableParamsWithWHRadio(
+                        null,
                         imageInfo.originUrl,
                         imageInfo.thumbnailUrl,
-                        imageSize = imageInfo.imgSize,
-                        imageCanDown = showDownLoadBtn
+                        imageInfo.imgSize,
+                        showDownLoadBtn
                     )
                 )
             }
@@ -102,6 +141,8 @@ object DraggableImageViewerHelper {
         } else {
             draggableInfo = DraggableImageInfo(originUrl, thumbUrl, imageSize = imgSize)
         }
+
+        draggableInfo.adjustImageUrl()
 
         return draggableInfo
     }

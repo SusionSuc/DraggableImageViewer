@@ -32,15 +32,16 @@
             android:layout_height="40dp"/>
 
     <TextView
-            android:layout_marginTop="40dp"
-            android:textColor="#000000"
-            android:textSize="16dp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:text="普通图片浏览"
-            android:id="@+id/mTvNormalImage"
-            android:background="#f2f2f2"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"/>
+        android:layout_marginTop="40dp"
+        android:textColor="#000000"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:text="photo view test"
+        android:id="@+id/mTvTest"
+        android:background="#f2f2f2"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"/>
+
 
 </LinearLayout>

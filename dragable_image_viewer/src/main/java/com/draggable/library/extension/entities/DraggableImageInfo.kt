@@ -4,9 +4,20 @@ import com.draggable.library.core.DraggableParamsInfo
 import java.io.Serializable
 
 data class DraggableImageInfo(
-    val originImg: String = "",
-    val thumbnailImg: String = "",
+    var originImg: String = "",
+    var thumbnailImg: String = "",
     val draggableInfo: DraggableParamsInfo = DraggableParamsInfo(),
     val imageSize: Long = 0,
-    val imageCanDown:Boolean = true
-) : Serializable
+    val imageCanDown: Boolean = true
+) : Serializable {
+    fun adjustImageUrl() {
+
+        if (originImg.isNotEmpty() && thumbnailImg.isNotEmpty()) return
+
+        if (originImg.isEmpty() && thumbnailImg.isNotEmpty()) {
+            originImg = thumbnailImg
+        } else {
+            thumbnailImg = originImg
+        }
+    }
+}

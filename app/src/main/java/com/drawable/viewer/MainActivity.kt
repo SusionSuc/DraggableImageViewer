@@ -5,8 +5,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import android.support.v4.app.ActivityCompat
+import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -26,8 +26,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, ImageListSampleActivity::class.java))
         }
 
-        mTvNormalImage.setOnClickListener {
-            startActivity(Intent(this, NormalImageActivity::class.java))
+        mTvTest. setOnClickListener {
+            startActivity(Intent(this, PhotoViewTestAcyivity::class.java))
         }
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {

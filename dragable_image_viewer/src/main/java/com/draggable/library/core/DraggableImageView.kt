@@ -14,7 +14,9 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.Priority
 import com.bumptech.glide.load.resource.gif.GifDrawable
+import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
 import com.draggable.library.extension.Utils
@@ -42,6 +44,7 @@ class DraggableImageView : FrameLayout {
     var actionListener: ActionListener? = null
     private var currentLoadUrl = ""
     private var downloadDisposable: Disposable? = null
+    private var draggableZoomCore: DraggableZoomCore? = null
 
     private var draggableZoomActionListener = object : DraggableZoomCore.ActionListener {
         override fun currentAlphaValue(alpha: Int) {
@@ -53,7 +56,11 @@ class DraggableImageView : FrameLayout {
         }
     }
 
-    private var draggableZoomCore: DraggableZoomCore? = null
+    private val exitAnimatorCallback = object :DraggableZoomCore.ExitAnimatorCallback{
+        override fun onStartInitAnimatorParams() {
+            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
+        }
+    }
 
     constructor(context: Context) : super(context) {
         initView()
@@ -66,22 +73,17 @@ class DraggableImageView : FrameLayout {
     private fun initView() {
         LayoutInflater.from(context).inflate(R.layout.view_draggable_simple_image, this)
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-        mDraggableImageViewPhotoView?.apply {
-            scaleType = ImageView.ScaleType.CENTER_CROP
-            setOnClickListener {
-                loadImage(draggableImageInfo?.originImg ?: "")
-            }
-        }
 
         setOnClickListener {
             clickToExit()
         }
+
         mDraggableImageViewPhotoView.setOnClickListener {
             clickToExit()
         }
 
         mDraggableImageViewViewOriginImage.setOnClickListener {
-            loadImage(draggableImageInfo?.originImg ?: "")
+            loadImage(draggableImageInfo?.originImg ?: "", false)
         }
     }
 
@@ -91,6 +93,7 @@ class DraggableImageView : FrameLayout {
         if (mDraggableImageViewPhotoView.scale != 1f) {
             mDraggableImageViewPhotoView.setScale(1f, true)
         } else {
+            draggableZoomCore?.adjustScaleViewToCorrectLocation()
             draggableZoomCore?.exitWithAnimator()
             downloadDisposable?.dispose()
         }
@@ -123,7 +126,11 @@ class DraggableImageView : FrameLayout {
 
     fun showImageWithAnimator(paramsInfo: DraggableImageInfo) {
         draggableImageInfo = paramsInfo
-        GlideHelper.retrieveImageWhRadioFromMemoryCache(context, paramsInfo.thumbnailImg) { whRadio ->
+        refreshOriginImageInfo()
+        GlideHelper.retrieveImageWhRadioFromMemoryCache(
+            context,
+            paramsInfo.thumbnailImg
+        ) { whRadio ->
             draggableImageInfo?.draggableInfo?.scaledViewWhRadio = whRadio
             post {
                 if (!paramsInfo.draggableInfo.isValid()) {
@@ -133,10 +140,11 @@ class DraggableImageView : FrameLayout {
 
                 draggableZoomCore = DraggableZoomCore(
                     paramsInfo.draggableInfo,
-                    mDraggableImageViewScaledView,
+                    mDraggableImageViewPhotoView,
                     width,
                     height,
-                    draggableZoomActionListener
+                    draggableZoomActionListener,
+                    exitAnimatorCallback
                 )
                 draggableZoomCore?.adjustScaleViewToInitLocation()
                 loadAvailableImage(true)
@@ -146,15 +154,20 @@ class DraggableImageView : FrameLayout {
 
     fun showImage(paramsInfo: DraggableImageInfo) {
         draggableImageInfo = paramsInfo
-        GlideHelper.retrieveImageWhRadioFromMemoryCache(context, paramsInfo.thumbnailImg) { whRadio ->
+        refreshOriginImageInfo()
+        GlideHelper.retrieveImageWhRadioFromMemoryCache(
+            context,
+            paramsInfo.thumbnailImg
+        ) { whRadio ->
             draggableImageInfo?.draggableInfo?.scaledViewWhRadio = whRadio
             post {
                 draggableZoomCore = DraggableZoomCore(
                     paramsInfo.draggableInfo,
-                    mDraggableImageViewScaledView,
+                    mDraggableImageViewPhotoView,
                     width,
                     height,
-                    draggableZoomActionListener
+                    draggableZoomActionListener,
+                    exitAnimatorCallback
                 )
                 draggableZoomCore?.adjustScaleViewToCorrectLocation()
                 loadAvailableImage(false)
@@ -163,46 +176,62 @@ class DraggableImageView : FrameLayout {
     }
 
     private fun loadAvailableImage(startAnimator: Boolean) {
+
         mDraggableImageViewPhotoView.setImageResource(R.drawable.place_holder_transparent)
-        GlideHelper.checkImageIsInMemoryCache(context, draggableImageInfo!!.thumbnailImg) { inCache ->
-            if (inCache) {
-                loadImage(draggableImageInfo!!.thumbnailImg)
-                if (startAnimator) {
-                    draggableZoomCore?.enterWithAnimator {
-                        if (Utils.isWifiConnected(context)) loadImage(draggableImageInfo?.originImg ?: "")
-                        mDraggableImageViewScaledView.layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT)
+
+        val thumnailImg = draggableImageInfo!!.thumbnailImg
+        val originImg = draggableImageInfo!!.originImg
+
+        val wifiIsConnect = Utils.isWifiConnected(context)
+
+        val originImgInCache = GlideHelper.imageIsInCache(context, originImg)
+
+        val targetUrl = if (wifiIsConnect || originImgInCache) originImg else thumnailImg
+
+        GlideHelper.checkImageIsInMemoryCache(
+            context,
+            thumnailImg
+        ) { inCache ->
+            if (inCache && startAnimator) {  //只有缩略图在缓存中时，才播放缩放入场动画
+                loadImage(thumnailImg, originImgInCache)
+                draggableZoomCore?.enterWithAnimator(object :DraggableZoomCore.AnimatorCallBack{
+                    override fun onEnterAnimatorStart() {
+                        mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
                     }
-                } else {
-                    if (Utils.isWifiConnected(context)) loadImage(draggableImageInfo?.originImg ?: "")
-                }
+
+                    override fun onEnterAnimatorEnd() {
+                        mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
+                        draggableZoomCore?.adjustViewToMatchParent()
+                        loadImage(targetUrl, originImgInCache)
+                    }
+                })
+
             } else {
-                if (Utils.isWifiConnected(context)) {
-                    loadImage(draggableImageInfo?.originImg ?: "")
-                } else {
-                    loadImage(draggableImageInfo!!.thumbnailImg)
-                }
+                loadImage(targetUrl, originImgInCache)
             }
         }
+
+        setViewOriginImageBtnVisible(targetUrl != originImg)
     }
 
-    private fun loadImage(url: String) {
+    private fun loadImage(url: String, originIsInCache: Boolean) {
         currentLoadUrl = url
-        if (currentLoadUrl != draggableImageInfo?.originImg) {
-            mDraggableImageViewViewOriginImage.visibility = View.VISIBLE
-            if (draggableImageInfo!!.imageSize > 0) {
-                mDraggableImageViewViewOriginImage.text =
-                    "查看原图(${Utils.formatImageSize(context, draggableImageInfo?.imageSize ?: 0)})"
-            }
-        } else {
-            mDraggableImageViewViewOriginImage.visibility = View.GONE
+
+        Log.d(TAG, "url : $currentLoadUrl")
+        if (url == draggableImageInfo?.originImg && !originIsInCache) {
+            mDraggableImageViewViewOProgressBar.visibility = View.VISIBLE
         }
 
-        val showLoading = !GlideHelper.imageIsInCache(context, url)
+        val options = RequestOptions().priority(Priority.HIGH) //被查看的图片应该由最高的请求优先级
 
         Glide.with(context)
             .load(url)
+            .apply(options)
             .into(object : SimpleTarget<Drawable>() {
-                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                override fun onResourceReady(
+                    resource: Drawable,
+                    transition: Transition<in Drawable>?
+                ) {
                     mDraggableImageViewViewOProgressBar.visibility = View.GONE
                     if (resource is GifDrawable) {
                         Glide.with(context).load(url).into(mDraggableImageViewPhotoView)
@@ -215,11 +244,6 @@ class DraggableImageView : FrameLayout {
                     super.onLoadFailed(errorDrawable)
                     mDraggableImageViewViewOProgressBar.visibility = View.GONE
                 }
-
-                override fun onLoadStarted(placeholder: Drawable?) {
-                    super.onLoadStarted(null)
-                    if (showLoading) mDraggableImageViewViewOProgressBar.visibility = View.VISIBLE
-                }
             })
     }
 
@@ -227,7 +251,8 @@ class DraggableImageView : FrameLayout {
     private fun translateToFixedBitmap(originDrawable: Drawable): Bitmap? {
         val whRadio = originDrawable.intrinsicWidth * 1f / originDrawable.intrinsicHeight
 
-        var bpWidth = if (this@DraggableImageView.width != 0) this@DraggableImageView.width else 1080
+        var bpWidth =
+            if (this@DraggableImageView.width != 0) this@DraggableImageView.width else 1080
 
         if (bpWidth > 1080) bpWidth = 1080
 
@@ -254,6 +279,13 @@ class DraggableImageView : FrameLayout {
         originDrawable.draw(canvas)
 
         return bp
+    }
+
+    private fun refreshOriginImageInfo() {
+        if (draggableImageInfo!!.imageSize > 0) {
+            mDraggableImageViewViewOriginImage.text =
+                "查看原图(${Utils.formatImageSize(context, draggableImageInfo?.imageSize ?: 0)})"
+        }
     }
 
     fun setViewOriginImageBtnVisible(visible: Boolean) {
