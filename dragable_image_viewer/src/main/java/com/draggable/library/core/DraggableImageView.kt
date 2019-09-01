@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Matrix
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
@@ -140,7 +141,6 @@ class DraggableImageView : FrameLayout {
                 }
 
                 needFitCenter = whRadio > (width * 1f / height)
-                Log.d(TAG, "needFitCenter : $needFitCenter   whRadio : $whRadio    width * 1f / height : ${width * 1f / height} ")
 
                 draggableZoomCore = DraggableZoomCore(
                     paramsInfo.draggableInfo,
@@ -206,6 +206,11 @@ class DraggableImageView : FrameLayout {
                     DraggableZoomCore.EnterAnimatorCallback {
                     override fun onEnterAnimatorStart() {
                         mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
+//                            val centerTopCropMatrix = Matrix()
+//                            val scale = draggableImageInfo?.draggableInfo?.scaledViewWhRadio  ?: 1f
+//                            centerTopCropMatrix.setScale(scale, scale)
+//                            mDraggableImageViewPhotoView.setDisplayMatrix(centerTopCropMatrix)
+//                            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.MATRIX
                     }
 
                     override fun onEnterAnimatorEnd() {
@@ -303,6 +308,7 @@ class DraggableImageView : FrameLayout {
     }
 
     fun closeWithAnimator() {
+        draggableZoomCore?.adjustScaleViewToCorrectLocation()
         draggableZoomCore?.exitWithAnimator(false)
         downloadDisposable?.dispose()
     }

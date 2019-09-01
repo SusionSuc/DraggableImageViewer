@@ -52,10 +52,6 @@ class DraggableZoomCore(
             }
             mTargetTranslateY = (mContainerHeight - maxHeight) / 2
         }
-
-        changeChildViewAnimateParams()
-
-        Log.d(TAG, "fixed size   width : $mCurrentWidth   height : $mCurrentHeight")
     }
 
     fun adjustScaleViewToCorrectLocation() {
@@ -209,13 +205,6 @@ class DraggableZoomCore(
         mCurrentHeight = (mContainerHeight * mCurrentScaleY).toInt()
 
         mAlpha = (255 - 255 * percent).toInt()
-
-        Log.d(
-            TAG,
-            "onActionMove offsetY : $offsetY  mCurrentTransLateY : $mCurrentTransLateY  gap : ${mContainerHeight * (1 - mCurrentScaleY) / 2}"
-        )
-
-
         changeChildViewDragParams()
     }
 
@@ -228,7 +217,7 @@ class DraggableZoomCore(
         val dy = mCurrentTransLateY - mTargetTranslateY
         val dWidth = mContainerWidth - draggableParams.viewWidth
         val dHeight = maxHeight - draggableParams.viewHeight
-        Log.d(TAG, "enterWithAnimator : dx:$dx  dy:$dy  dWidth : $dWidth  dHeight:$dHeight")
+        Log.d(TAG, "enterWithAnimator : dx:$dx  dy:$dy  dWidth : $dWidth xss dHeight:$dHeight")
         val enterAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
             duration = ANIMATOR_DURATION
             addUpdateListener {

@@ -32,6 +32,8 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.OverScroller;
 
+import com.draggable.library.extension.Utils;
+
 /**
  * The component of {@link PhotoView} which does the work allowing for zooming, scaling, panning, etc.
  * It is made public in case you need to subclass something other than AppCompatImageView and still
@@ -39,6 +41,7 @@ import android.widget.OverScroller;
  */
 public class PhotoViewAttacher implements View.OnTouchListener, View.OnLayoutChangeListener {
 
+    private static final String TAG = "PhotoViewAttacher";
     private static final int HORIZONTAL_EDGE_NONE = -1;
     private static final int HORIZONTAL_EDGE_LEFT = 0;
     private static final int HORIZONTAL_EDGE_RIGHT = 1;
@@ -87,8 +90,6 @@ public class PhotoViewAttacher implements View.OnTouchListener, View.OnLayoutCha
 
     private boolean mZoomEnabled = true;
     private ScaleType mScaleType = ScaleType.FIT_CENTER;
-
-    public boolean isScrollToVerticalTop = true;
 
     private OnGestureListener onGestureListener = new OnGestureListener() {
         @Override
@@ -592,8 +593,23 @@ public class PhotoViewAttacher implements View.OnTouchListener, View.OnLayoutCha
         } else if (mScaleType == ScaleType.CENTER_CROP) {
             float scale = Math.max(widthScale, heightScale);
             mBaseMatrix.postScale(scale, scale);
-            mBaseMatrix.postTranslate((viewWidth - drawableWidth * scale) / 2F,
-                    (viewHeight - drawableHeight * scale) / 2F);
+//            mBaseMatrix.postTranslate((viewWidth - drawableWidth * scale) / 2F,
+//                    (viewHeight - drawableHeight * scale) / 2F);
+
+            // SUSION FIX  长图时，保证图片从最开始显示
+            float screenWhRadio = Utils.getScreenWidth() * 1f / Utils.getScreenHeight();
+            float imageWhRadio = drawableWidth *1f / drawableHeight;
+
+            Log.d(TAG, "screenWhRadio :"+screenWhRadio);
+            Log.d(TAG, "imageWhRadio :"+imageWhRadio);
+
+            if (imageWhRadio < screenWhRadio){
+                mBaseMatrix.postTranslate(0f, 0f);
+            }else {
+                mBaseMatrix.postTranslate((viewWidth - drawableWidth * scale) / 2F,
+                        (viewHeight - drawableHeight * scale) / 2F);
+            }
+
         } else if (mScaleType == ScaleType.CENTER_INSIDE) {
             float scale = Math.min(1.0f, Math.min(widthScale, heightScale));
             mBaseMatrix.postScale(scale, scale);
@@ -625,6 +641,7 @@ public class PhotoViewAttacher implements View.OnTouchListener, View.OnLayoutCha
         resetMatrix();
     }
 
+    //  SUSION FIX  判断当前 photo view 是否显示在图片的顶部
     public boolean displyRectIsFromTop() {
         final RectF rect = getDisplayRect(getDrawMatrix());
         if (rect == null) return true;
@@ -655,12 +672,13 @@ public class PhotoViewAttacher implements View.OnTouchListener, View.OnLayoutCha
         } else if (rect.top > 0) {
             mVerticalScrollEdge = VERTICAL_EDGE_TOP;
             deltaY = -rect.top;
-        } else if (rect.bottom < viewHeight) {
+        }else if (rect.bottom < viewHeight) {
             mVerticalScrollEdge = VERTICAL_EDGE_BOTTOM;
             deltaY = viewHeight - rect.bottom;
         } else {
             mVerticalScrollEdge = VERTICAL_EDGE_NONE;
         }
+
         final int viewWidth = getImageViewWidth(mImageView);
         if (width <= viewWidth) {
             switch (mScaleType) {

@@ -3,6 +3,7 @@ package com.draggable.library.extension
 import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.os.Build
@@ -13,6 +14,17 @@ import android.view.WindowManager
 
 object Utils {
 
+    private val sMetrics = Resources.getSystem().displayMetrics
+
+    @JvmStatic
+    fun getScreenHeight(): Int {
+        return sMetrics?.heightPixels ?: 0
+    }
+
+    @JvmStatic
+    fun getScreenWidth(): Int {
+        return sMetrics?.widthPixels ?: 0
+    }
 
     /**
      * 使状态栏透明
