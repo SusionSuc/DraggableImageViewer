@@ -45,6 +45,7 @@ class DraggableImageView : FrameLayout {
     private var currentLoadUrl = ""
     private var downloadDisposable: Disposable? = null
     private var draggableZoomCore: DraggableZoomCore? = null
+    private var needFitCenter = true
 
     private var draggableZoomActionListener = object : DraggableZoomCore.ActionListener {
         override fun currentAlphaValue(alpha: Int) {
@@ -56,7 +57,7 @@ class DraggableImageView : FrameLayout {
         }
     }
 
-    private val exitAnimatorCallback = object :DraggableZoomCore.ExitAnimatorCallback{
+    private val exitAnimatorCallback = object : DraggableZoomCore.ExitAnimatorCallback {
         override fun onStartInitAnimatorParams() {
             mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
         }
@@ -94,7 +95,7 @@ class DraggableImageView : FrameLayout {
             mDraggableImageViewPhotoView.setScale(1f, true)
         } else {
             draggableZoomCore?.adjustScaleViewToCorrectLocation()
-            draggableZoomCore?.exitWithAnimator()
+            draggableZoomCore?.exitWithAnimator(false)
             downloadDisposable?.dispose()
         }
     }
@@ -138,6 +139,9 @@ class DraggableImageView : FrameLayout {
                     return@post
                 }
 
+                needFitCenter = whRadio > (width * 1f / height)
+                Log.d(TAG, "needFitCenter : $needFitCenter   whRadio : $whRadio    width * 1f / height : ${width * 1f / height} ")
+
                 draggableZoomCore = DraggableZoomCore(
                     paramsInfo.draggableInfo,
                     mDraggableImageViewPhotoView,
@@ -160,7 +164,11 @@ class DraggableImageView : FrameLayout {
             paramsInfo.thumbnailImg
         ) { whRadio ->
             draggableImageInfo?.draggableInfo?.scaledViewWhRadio = whRadio
+
             post {
+                needFitCenter = whRadio > (width * 1f / height)
+                Log.d(TAG, "needFitCenter : $needFitCenter   whRadio : $whRadio    width * 1f / height : ${width * 1f / height} ")
+
                 draggableZoomCore = DraggableZoomCore(
                     paramsInfo.draggableInfo,
                     mDraggableImageViewPhotoView,
@@ -194,14 +202,17 @@ class DraggableImageView : FrameLayout {
         ) { inCache ->
             if (inCache && startAnimator) {  //只有缩略图在缓存中时，才播放缩放入场动画
                 loadImage(thumnailImg, originImgInCache)
-                draggableZoomCore?.enterWithAnimator(object :DraggableZoomCore.AnimatorCallBack{
+                draggableZoomCore?.enterWithAnimator(object :
+                    DraggableZoomCore.EnterAnimatorCallback {
                     override fun onEnterAnimatorStart() {
                         mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
                     }
 
                     override fun onEnterAnimatorEnd() {
-                        mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
-                        draggableZoomCore?.adjustViewToMatchParent()
+                        if (needFitCenter){
+                            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
+                            draggableZoomCore?.adjustViewToMatchParent()
+                        }
                         loadImage(targetUrl, originImgInCache)
                     }
                 })
@@ -217,7 +228,6 @@ class DraggableImageView : FrameLayout {
     private fun loadImage(url: String, originIsInCache: Boolean) {
         currentLoadUrl = url
 
-        Log.d(TAG, "url : $currentLoadUrl")
         if (url == draggableImageInfo?.originImg && !originIsInCache) {
             mDraggableImageViewViewOProgressBar.visibility = View.VISIBLE
         }
@@ -293,7 +303,7 @@ class DraggableImageView : FrameLayout {
     }
 
     fun closeWithAnimator() {
-        draggableZoomCore?.exitWithAnimator()
+        draggableZoomCore?.exitWithAnimator(false)
         downloadDisposable?.dispose()
     }
 

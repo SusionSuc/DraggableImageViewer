@@ -52,6 +52,7 @@ class DraggableZoomCore(
             }
             mTargetTranslateY = (mContainerHeight - maxHeight) / 2
         }
+
         changeChildViewAnimateParams()
 
         Log.d(TAG, "fixed size   width : $mCurrentWidth   height : $mCurrentHeight")
@@ -76,22 +77,22 @@ class DraggableZoomCore(
             mTargetTranslateY = 0f
         }
         mAlpha = 255
-
-        Log.d(TAG, "adjustScaleViewToCorrectLocation : fixed size   width : $mCurrentWidth   height : $mCurrentHeight  mCurrentTransLateY : $mCurrentTransLateY")
-
         changeChildViewAnimateParams()
     }
 
+    //兼容 photo view, 使photo view 的缩放功能体验更好
     fun adjustViewToMatchParent() {
         mCurrentWidth = mContainerWidth
         mCurrentHeight = mContainerHeight
         mCurrentTranslateX = 0f
         mCurrentTransLateY = 0f
+        mTargetTranslateY = 0f
         changeChildViewAnimateParams()
     }
 
     //child view scale core params
     private fun changeChildViewAnimateParams() {
+        Log.d(TAG, "changeChildViewAnimateParams : fi mCurrentTransLateY : $mCurrentTransLateY")
         scaleDraggableView.apply {
             layoutParams = layoutParams?.apply {
                 width = mCurrentWidth
@@ -169,7 +170,7 @@ class DraggableZoomCore(
                 if (event.pointerCount == 1) {
                     if (mCurrentScaleY != 1f) {
                         if (mCurrentScaleY < 0.7) {
-                            exitWithAnimator()
+                            exitWithAnimator(true)
                         } else {
                             restoreStatusWithAnimator()
                         }
@@ -209,13 +210,19 @@ class DraggableZoomCore(
 
         mAlpha = (255 - 255 * percent).toInt()
 
+        Log.d(
+            TAG,
+            "onActionMove offsetY : $offsetY  mCurrentTransLateY : $mCurrentTransLateY  gap : ${mContainerHeight * (1 - mCurrentScaleY) / 2}"
+        )
+
+
         changeChildViewDragParams()
     }
 
     /**
      * enter animator
      * */
-    fun enterWithAnimator(animatorCallback: AnimatorCallBack? = null) {
+    fun enterWithAnimator(animatorCallback: EnterAnimatorCallback? = null) {
         if (!draggableParams.isValid()) return
         val dx = mCurrentTranslateX - 0
         val dy = mCurrentTransLateY - mTargetTranslateY
@@ -251,13 +258,25 @@ class DraggableZoomCore(
     /**
      * exit animator
      * */
-    fun exitWithAnimator() {
+    fun exitWithAnimator(isDragScale:Boolean) {
         val scaleWidth = mContainerWidth * mCurrentScaleX
         val scaleHeight = maxHeight * mCurrentScaleY
+
         mCurrentTranslateX += mContainerWidth * (1 - mCurrentScaleX) / 2
-        mCurrentTransLateY += maxHeight * (1 - mCurrentScaleY) / 2
+
+//        mCurrentTransLateY += maxHeight * (1 - mCurrentScaleY) / 2   正常对view的缩放代码
+
+        if (isDragScale){
+            val exScale = maxHeight / mContainerHeight  //这个是为 photo view 特殊处理的！！！
+            mCurrentTransLateY += mContainerHeight * (1 - mCurrentScaleY * exScale) / 2
+        }else{
+            mCurrentTransLateY += maxHeight * (1 - mCurrentScaleY) / 2
+        }
+
         mCurrentScaleX = 1f
         mCurrentScaleY = 1f
+
+
         if (draggableParams.isValid()) {
             animateToOriginLocation(scaleWidth, scaleHeight)
         } else {
@@ -300,12 +319,11 @@ class DraggableZoomCore(
     //退出时，如果有指定入场时的view， 则回到最初的位置
     private fun animateToOriginLocation(currentWidth: Float, currentHeight: Float) {
         exitCallback?.onStartInitAnimatorParams()
+
         val dx = mCurrentTranslateX - draggableParams.viewLeft
         val dy = mCurrentTransLateY - draggableParams.viewTop
         val dWidth = currentWidth - draggableParams.viewWidth
         val dHeight = currentHeight - draggableParams.viewHeight
-
-        Log.d(TAG, "animateToOriginLocation : fixed size   width : $mCurrentWidth   height : $mCurrentHeight  mCurrentTransLateY : $mCurrentTransLateY")
 
         val exitAnimator = ValueAnimator.ofFloat(1f, 0f).apply {
             duration = ANIMATOR_DURATION
@@ -334,7 +352,10 @@ class DraggableZoomCore(
 
     //用户没有触发拖拽退出，还原状态
     private fun restoreStatusWithAnimator() {
-        Log.d(TAG, "mCurrentTranslateX : $mCurrentTranslateX  mCurrentTransLateY : $mCurrentTransLateY")
+        Log.d(
+            TAG,
+            "mCurrentTranslateX : $mCurrentTranslateX  mCurrentTransLateY : $mCurrentTransLateY"
+        )
         val initAlpha = mAlpha
         val dyAlpha = 255 - mAlpha
 
@@ -378,12 +399,12 @@ class DraggableZoomCore(
         fun currentAlphaValue(percent: Int)
     }
 
-    interface AnimatorCallBack {
+    interface EnterAnimatorCallback {
         fun onEnterAnimatorStart()
         fun onEnterAnimatorEnd()
     }
 
-    interface ExitAnimatorCallback{
+    interface ExitAnimatorCallback {
         fun onStartInitAnimatorParams()
     }
 

@@ -9,6 +9,7 @@
 
     <com.draggable.library.core.photoview.PhotoView
         android:id="@+id/mDraggableImageViewPhotoView"
+        android:scaleType="centerCrop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
