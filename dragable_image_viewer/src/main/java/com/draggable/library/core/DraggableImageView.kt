@@ -182,6 +182,7 @@ class DraggableImageView : FrameLayout {
 
     private fun loadAvailableImage(startAnimator: Boolean) {
 
+        mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
         mDraggableImageViewPhotoView.setImageResource(R.drawable.place_holder_transparent)
 
         val thumnailImg = draggableImageInfo!!.thumbnailImg
@@ -216,10 +217,6 @@ class DraggableImageView : FrameLayout {
 
             } else {
                 loadImage(targetUrl, originImgInCache)
-                if (needFitCenter) {
-                    mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
-                    draggableZoomCore?.adjustViewToMatchParent()
-                }
             }
         }
 
