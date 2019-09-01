@@ -166,6 +166,7 @@ class DraggableImageView : FrameLayout {
             draggableImageInfo?.draggableInfo?.scaledViewWhRadio = whRadio
 
             post {
+
                 needFitCenter = whRadio > (width * 1f / height)
                 Log.d(TAG, "needFitCenter : $needFitCenter   whRadio : $whRadio    width * 1f / height : ${width * 1f / height} ")
 
@@ -178,6 +179,11 @@ class DraggableImageView : FrameLayout {
                     exitAnimatorCallback
                 )
                 draggableZoomCore?.adjustScaleViewToCorrectLocation()
+                if (whRadio != DraggableParamsInfo.INVALID_RADIO && whRadio < Utils.getScreenWidth() *1f / Utils.getScreenHeight()){
+                    mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP //超长图
+                }else{
+                    mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
+                }
                 loadAvailableImage(false)
             }
         }
@@ -206,11 +212,6 @@ class DraggableImageView : FrameLayout {
                     DraggableZoomCore.EnterAnimatorCallback {
                     override fun onEnterAnimatorStart() {
                         mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
-//                            val centerTopCropMatrix = Matrix()
-//                            val scale = draggableImageInfo?.draggableInfo?.scaledViewWhRadio  ?: 1f
-//                            centerTopCropMatrix.setScale(scale, scale)
-//                            mDraggableImageViewPhotoView.setDisplayMatrix(centerTopCropMatrix)
-//                            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.MATRIX
                     }
 
                     override fun onEnterAnimatorEnd() {
@@ -266,10 +267,11 @@ class DraggableImageView : FrameLayout {
     private fun translateToFixedBitmap(originDrawable: Drawable): Bitmap? {
         val whRadio = originDrawable.intrinsicWidth * 1f / originDrawable.intrinsicHeight
 
+        val screenWidth =  Utils.getScreenWidth()
         var bpWidth =
-            if (this@DraggableImageView.width != 0) this@DraggableImageView.width else 1080
+            if (this@DraggableImageView.width != 0) this@DraggableImageView.width else screenWidth
 
-        if (bpWidth > 1080) bpWidth = 1080
+        if (bpWidth > screenWidth) bpWidth = screenWidth
 
         val bpHeight = (bpWidth * 1f / whRadio).toInt()
 
