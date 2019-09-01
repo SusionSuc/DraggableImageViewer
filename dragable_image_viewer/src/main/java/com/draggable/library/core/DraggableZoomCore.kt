@@ -265,48 +265,14 @@ class DraggableZoomCore(
 
         Log.d(TAG, "mCurrentTransLateY : $mCurrentTransLateY  222")
 
-
         mCurrentScaleX = 1f
         mCurrentScaleY = 1f
 
         if (draggableParams.isValid()) {
             animateToOriginLocation(scaleWidth, scaleHeight)
         } else {
-//            animateToScreenBottom(scaleWidth, scaleHeight)
             actionListener?.onExit()
         }
-    }
-
-    //没有指定入场的时候的位置，默认滚动到屏幕底部来退出
-    private fun animateToScreenBottom(currentWidth: Float, currentHeight: Float) {
-        val initTranslateY = mCurrentTransLateY
-        val initTranslateX = mCurrentTranslateX
-        val dy = 1000f
-        val dx = (currentWidth * 1f / 2) - mCurrentTranslateX
-        mCurrentWidth = currentWidth.toInt()
-        mCurrentHeight = currentHeight.toInt()
-
-        val exitAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = ANIMATOR_DURATION
-            addUpdateListener {
-                val percent = it.animatedValue as Float
-                mCurrentTranslateX = initTranslateX + dx * percent
-                mCurrentTransLateY = initTranslateY + dy * percent
-                mAlpha = (mAlpha * (1 - percent)).toInt()
-                changeChildViewAnimateParams()
-            }
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator?) {
-                    isAnimating = true
-                }
-
-                override fun onAnimationEnd(animation: Animator?) {
-                    isAnimating = false
-                    actionListener?.onExit()
-                }
-            })
-        }
-        exitAnimator.start()
     }
 
     //退出时，如果有指定入场时的view， 则回到最初的位置

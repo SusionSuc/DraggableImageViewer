@@ -107,7 +107,7 @@ class DraggableImageView : FrameLayout {
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         val isIntercept = super.onInterceptTouchEvent(ev)
         if (draggableZoomCore?.isAnimating == true) {
-            return true
+            return false
         }
         if (mDraggableImageViewPhotoView.scale != 1f) {
             return false
@@ -216,6 +216,10 @@ class DraggableImageView : FrameLayout {
 
             } else {
                 loadImage(targetUrl, originImgInCache)
+                if (needFitCenter) {
+                    mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
+                    draggableZoomCore?.adjustViewToMatchParent()
+                }
             }
         }
 
