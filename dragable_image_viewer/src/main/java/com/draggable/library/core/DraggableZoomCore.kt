@@ -24,7 +24,6 @@ class DraggableZoomCore(
     //core animator params
     private val ANIMATOR_DURATION = 200L
     private var mAlpha = 0
-    private var mTargetTranslateY = 1f
     private var mCurrentTransLateY: Float = 0.toFloat()
     private var mCurrentTranslateX: Float = 0.toFloat()
     private var mCurrentScaleX = 1f
@@ -34,6 +33,7 @@ class DraggableZoomCore(
     private var maxHeight = 1f
     private var mCurrentWidth: Int = 0
     private var mCurrentHeight: Int = 0
+    private var mTargetTranslateY = 0f
 
     //drag event params
     private var mDownX: Float = 0f
@@ -88,7 +88,6 @@ class DraggableZoomCore(
 
     //child view scale core params
     private fun changeChildViewAnimateParams() {
-        Log.d(TAG, "changeChildViewAnimateParams : fi mCurrentTransLateY : $mCurrentTransLateY")
         scaleDraggableView.apply {
             layoutParams = layoutParams?.apply {
                 width = mCurrentWidth
@@ -171,9 +170,7 @@ class DraggableZoomCore(
                             restoreStatusWithAnimator()
                         }
                     } else {
-                        if (mCurrentTransLateY != mTargetTranslateY) {
-                            restoreStatusWithAnimator()
-                        }
+
                     }
                 }
             }
@@ -247,29 +244,36 @@ class DraggableZoomCore(
     /**
      * exit animator
      * */
-    fun exitWithAnimator(isDragScale:Boolean) {
+    fun exitWithAnimator(isDragScale: Boolean) {
         val scaleWidth = mContainerWidth * mCurrentScaleX
         val scaleHeight = maxHeight * mCurrentScaleY
 
         mCurrentTranslateX += mContainerWidth * (1 - mCurrentScaleX) / 2
 
-//        mCurrentTransLateY += maxHeight * (1 - mCurrentScaleY) / 2   正常对view的缩放代码
+        Log.d(
+            TAG,
+            "mCurrentTransLateY : $mCurrentTransLateY  1111   mTargetTranslateY : $mTargetTranslateY"
+        )
 
-        if (isDragScale){
-            val exScale = maxHeight / mContainerHeight  //这个是为 photo view 特殊处理的！！！
-            mCurrentTransLateY += mContainerHeight * (1 - mCurrentScaleY * exScale) / 2
-        }else{
+//        mCurrentTransLateY += maxHeight * (1 - mCurrentScaleY) / 2   正常对view的缩放代码
+        if (isDragScale) {
+            val exScale = maxHeight / mContainerHeight   //这个是为 photo view 特殊处理的！！！
+            mCurrentTransLateY += (mContainerHeight * (1 - mCurrentScaleY * exScale) / 2 - mTargetTranslateY)
+        } else {
             mCurrentTransLateY += maxHeight * (1 - mCurrentScaleY) / 2
         }
+
+        Log.d(TAG, "mCurrentTransLateY : $mCurrentTransLateY  222")
+
 
         mCurrentScaleX = 1f
         mCurrentScaleY = 1f
 
-
         if (draggableParams.isValid()) {
             animateToOriginLocation(scaleWidth, scaleHeight)
         } else {
-            animateToScreenBottom(scaleWidth, scaleHeight)
+//            animateToScreenBottom(scaleWidth, scaleHeight)
+            actionListener?.onExit()
         }
     }
 
@@ -309,6 +313,11 @@ class DraggableZoomCore(
     private fun animateToOriginLocation(currentWidth: Float, currentHeight: Float) {
         exitCallback?.onStartInitAnimatorParams()
 
+        Log.d(
+            TAG,
+            "mCurrentTranslateX : $mCurrentTranslateX  mCurrentTransLateY : $mCurrentTransLateY"
+        )
+
         val dx = mCurrentTranslateX - draggableParams.viewLeft
         val dy = mCurrentTransLateY - draggableParams.viewTop
         val dWidth = currentWidth - draggableParams.viewWidth
@@ -341,10 +350,8 @@ class DraggableZoomCore(
 
     //用户没有触发拖拽退出，还原状态
     private fun restoreStatusWithAnimator() {
-        Log.d(
-            TAG,
-            "mCurrentTranslateX : $mCurrentTranslateX  mCurrentTransLateY : $mCurrentTransLateY"
-        )
+
+        Log.d(TAG, "mCurrentTransLateY : $mCurrentTransLateY ")
         val initAlpha = mAlpha
         val dyAlpha = 255 - mAlpha
 
@@ -357,7 +364,7 @@ class DraggableZoomCore(
         val dx = 0 - mCurrentTranslateX
 
         val initY = mCurrentTransLateY
-        val dy = 0 - mCurrentTransLateY
+        val dy = mTargetTranslateY - mCurrentTransLateY
 
         val restoreAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
             duration = ANIMATOR_DURATION

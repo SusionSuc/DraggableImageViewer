@@ -246,9 +246,9 @@ class DraggableImageView : FrameLayout {
                         mDraggableImageViewPhotoView.setImageBitmap(translateToFixedBitmap(resource))
                     }
 
-                    if (url == draggableImageInfo?.originImg){
-                        val whRadio = resource.intrinsicWidth *1f / resource.intrinsicHeight
-                        if ( whRadio < Utils.getScreenWidth() * 1f / Utils.getScreenHeight()) {
+                    if (url == draggableImageInfo?.originImg) {
+                        val whRadio = resource.intrinsicWidth * 1f / resource.intrinsicHeight
+                        if (whRadio < Utils.getScreenWidth() * 1f / Utils.getScreenHeight()) {
                             mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP //超长图
                         } else {
                             mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
