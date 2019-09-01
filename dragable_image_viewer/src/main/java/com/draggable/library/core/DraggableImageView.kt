@@ -217,6 +217,9 @@ class DraggableImageView : FrameLayout {
 
             } else {
                 loadImage(targetUrl, originImgInCache)
+                if (needFitCenter) {
+                    draggableZoomCore?.adjustViewToMatchParent()
+                }
             }
         }
 
