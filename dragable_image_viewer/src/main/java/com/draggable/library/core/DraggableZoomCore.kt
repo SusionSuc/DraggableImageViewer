@@ -169,8 +169,10 @@ class DraggableZoomCore(
                         } else {
                             restoreStatusWithAnimator()
                         }
-                    } else {
+                    }
 
+                    if (mCurrentTransLateY < mTargetTranslateY){
+                        restoreStatusWithAnimator()
                     }
                 }
             }
