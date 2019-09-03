@@ -257,6 +257,7 @@ class DraggableImageView : FrameLayout {
                         } else {
                             mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
                         }
+                        mDraggableImageViewViewOriginImage.visibility = View.GONE
                     }
                 }
 
