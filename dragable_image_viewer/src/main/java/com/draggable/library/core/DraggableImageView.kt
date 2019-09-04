@@ -198,6 +198,10 @@ class DraggableImageView : FrameLayout {
             context,
             thumnailImg
         ) { inCache ->
+            if (inCache){
+                loadImage(thumnailImg, originImgInCache)
+            }
+            
             if (inCache && startAnimator) {  //只有缩略图在缓存中时，才播放缩放入场动画
                 loadImage(thumnailImg, originImgInCache)
                 draggableZoomCore?.enterWithAnimator(object :
