@@ -16,7 +16,6 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".PhotoViewTestAcyivity"></activity>
-        <activity android:name=".NormalImageActivity"></activity>
         <activity android:name=".ImageListSampleActivity"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
