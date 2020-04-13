@@ -26,5 +26,6 @@ dependencies {
     api project(":dragable_image_viewer")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation rootProject.ext.androidXDependencies.appcompat
+//    implementation 'com.susion:image-viewer:1.0.1'
 
 }

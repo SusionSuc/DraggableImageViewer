@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.draggable.library.extension.DraggableImageViewerHelper
+import com.draggable.library.extension.ImageViewerHelper
 import kotlinx.android.synthetic.main.activity_sample_simple_image.*
 
 class SimpleImageSampleActivity : AppCompatActivity() {
@@ -41,7 +41,7 @@ class SimpleImageSampleActivity : AppCompatActivity() {
 
         sampleViews.forEach { sampleInfo ->
             sampleInfo.view.setOnClickListener {
-                DraggableImageViewerHelper.showSimpleImage(
+                ImageViewerHelper.showSimpleImage(
                     this,
                     sampleInfo.url,
                     view = sampleInfo.view

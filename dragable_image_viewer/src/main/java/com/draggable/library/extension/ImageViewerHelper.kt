@@ -6,7 +6,7 @@ import android.view.View
 import com.draggable.library.core.DraggableParamsInfo
 import com.draggable.library.extension.entities.DraggableImageInfo
 
-object DraggableImageViewerHelper {
+object ImageViewerHelper {
 
     private val TAG = javaClass.simpleName
 

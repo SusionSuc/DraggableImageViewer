@@ -1,0 +1,14 @@
+apply plugin: 'com.novoda.bintray-release'
+
+publish {
+    userOrg = 'susion'
+    repoName = 'arch'
+    groupId = 'com.susion'
+    artifactId = ARTIFACT_ID
+    publishVersion = '1.0.1'
+    desc = 'android image viewer'
+    website = 'https://github.com/SusionSuc/DraggableImageViewer'
+}
+
+
+//./gradlew clean build bintrayUpload -PbintrayUser=susion -PbintrayKey= -PdryRun=false
