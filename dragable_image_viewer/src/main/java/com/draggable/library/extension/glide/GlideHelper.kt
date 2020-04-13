@@ -1,6 +1,7 @@
 package com.draggable.library.extension.glide
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,15 +12,18 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import android.support.v4.content.ContextCompat
+import androidx.core.content.ContextCompat
 import android.text.TextUtils
 import android.util.Log
+import android.view.Gravity
+import android.webkit.MimeTypeMap
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.disklrucache.DiskLruCache
 import com.bumptech.glide.load.engine.cache.DiskCache
 import com.bumptech.glide.load.engine.cache.SafeKeyGenerator
 import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.Target
@@ -30,6 +34,7 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.io.*
 import java.nio.channels.FileChannel
+import java.util.*
 
 object GlideHelper {
 
@@ -39,7 +44,7 @@ object GlideHelper {
     fun retrieveImageWhRadioFromMemoryCache(
         context: Context,
         thumbnailImg: String,
-        retrieveCallBack: (whRadio: Float) -> Unit
+        retrieveCallBack: (inMemCache:Boolean , whRadio: Float, isGif:Boolean ) -> Unit
     ) {
         Glide.with(context).load(thumbnailImg).apply(RequestOptions().onlyRetrieveFromCache(true))
             .into(object : SimpleTarget<Drawable>() {
@@ -49,20 +54,24 @@ object GlideHelper {
                 ) {
                     if (resource.intrinsicWidth > 0 && resource.intrinsicHeight > 0) {
                         Log.d(TAG, "从内存中检索到图片！！！！$thumbnailImg")
-                        retrieveCallBack(resource.intrinsicWidth * 1f / resource.intrinsicHeight)
+                        retrieveCallBack(true, resource.intrinsicWidth * 1f / resource.intrinsicHeight,resource is GifDrawable)
                     } else {
-                        retrieveCallBack(DraggableParamsInfo.INVALID_RADIO)
+                        retrieveCallBack(false, DraggableParamsInfo.INVALID_RADIO,false)
                     }
                 }
 
                 override fun onLoadFailed(errorDrawable: Drawable?) {
                     super.onLoadFailed(errorDrawable)
-                    retrieveCallBack(DraggableParamsInfo.INVALID_RADIO)
+                    retrieveCallBack(false,DraggableParamsInfo.INVALID_RADIO,false)
                 }
             })
     }
 
-    fun checkImageIsInMemoryCache(context: Context, url: String, callback: (inCache: Boolean) -> Unit) {
+    fun checkImageIsInMemoryCache(
+        context: Context,
+        url: String,
+        callback: (inCache: Boolean) -> Unit
+    ) {
         Glide.with(context).load(url).apply(RequestOptions().onlyRetrieveFromCache(true))
             .into(object : SimpleTarget<Drawable>() {
                 override fun onResourceReady(
@@ -82,13 +91,14 @@ object GlideHelper {
 
     //图片是否在 内存缓存 or  磁盘缓存
     fun imageIsInCache(context: Context, url: String): Boolean {
-        if (url.isEmpty())return false
+        if (url.isEmpty()) return false
         try {
             //磁盘缓存
             val safeKeyGenerator = SafeKeyGenerator()
             val safeKey = safeKeyGenerator.getSafeKey(GlideUrl(url))
             val file = File(context.cacheDir, DiskCache.Factory.DEFAULT_DISK_CACHE_DIR)
-            val diskLruCache = DiskLruCache.open(file, 1, 1, DiskCache.Factory.DEFAULT_DISK_CACHE_SIZE.toLong())
+            val diskLruCache =
+                DiskLruCache.open(file, 1, 1, DiskCache.Factory.DEFAULT_DISK_CACHE_SIZE.toLong())
             val value = diskLruCache.get(safeKey)
             if (value != null && value.getFile(0).exists()) {
                 return true
@@ -105,18 +115,24 @@ object GlideHelper {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             ) !== PackageManager.PERMISSION_GRANTED
         ) {
-            Toast.makeText(context, "没有打开存储权限", Toast.LENGTH_SHORT).show()
+            toastInScreenCenter(context, "没有打开存储权限")
             return null
         }
 
-        Toast.makeText(context, "开始下载", Toast.LENGTH_SHORT).show()
+        toastInScreenCenter(context, "开始下载")
         return Observable.create<File> {
-            it.onNext(Glide.with(context).load(url).downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL).get())
+            it.onNext(
+                Glide.with(context).load(url).downloadOnly(
+                    Target.SIZE_ORIGINAL,
+                    Target.SIZE_ORIGINAL
+                ).get()
+            )
             it.onComplete()
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).doOnNext { file ->
             try {
                 val downloadFolderName = DOWNLOAD_FILE_NAME
-                val path = Environment.getExternalStorageDirectory().toString() + "/" + downloadFolderName + "/"
+                val path =
+                    Environment.getExternalStorageDirectory().toString() + "/" + downloadFolderName + "/"
                 var name: String
                 try {
                     name = url.substring(url.lastIndexOf("/") + 1, url.length)
@@ -130,41 +146,46 @@ object GlideHelper {
                 }
 
                 val mimeType = getImageTypeWithMime(file.absolutePath)
-                name = "$name.$mimeType"
+                name = "$name${System.currentTimeMillis()}.$mimeType"
                 createFileByDeleteOldFile(path + name)
+                Log.d(TAG, "save file : $path$name")
                 val result = copyFile(file, path, name)
+
                 if (result) {
-                    Toast.makeText(context, "成功保存到 $path$name", Toast.LENGTH_SHORT).show()
                     saveImageToGallery(context, File(path, name))
+                    toastInScreenCenter(context, "成功保存到系统相册")
                 } else {
-                    Toast.makeText(context, "保存失败", Toast.LENGTH_SHORT).show()
+                    toastInScreenCenter(context, "保存失败")
                 }
 
             } catch (e: Exception) {
                 Log.d(TAG, "exception : ${e.message}")
             }
         }.doOnError {
-            Toast.makeText(context, "保存失败", Toast.LENGTH_SHORT).show()
+            toastInScreenCenter(context, "保存失败")
         }.subscribe()
+
+    }
+
+    private fun toastInScreenCenter(context: Context, msg:String){
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).apply {
+            setGravity(Gravity.CENTER, 0, 0)
+        }.show()
     }
 
     private fun saveImageToGallery(context: Context, file: File) {
         try {
-            MediaStore.Images.Media.insertImage(
-                context.contentResolver,
-                file.absolutePath, file.name, null
-            )
-        } catch (e: FileNotFoundException) {
+            // 通知图库更新
+            MediaScannerConnection.scanFile(context.applicationContext, arrayOf(file.absolutePath), null) { path, uri ->
+            }
+            val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+            mediaScanIntent.data = Uri.parse(file.absolutePath)
+            context.sendBroadcast(mediaScanIntent)
+
+        } catch (e: Exception) {
             e.printStackTrace()
         }
-        // 通知图库更新
-        MediaScannerConnection.scanFile(context, arrayOf(file.absolutePath), null) { path, uri ->
-            val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-            mediaScanIntent.data = uri
-            context.sendBroadcast(mediaScanIntent)
-        }
     }
-
 
     /**
      * Create a file if it doesn't exist, otherwise delete old file before creating.
@@ -249,7 +270,7 @@ object GlideHelper {
      * @param targetPath 目标路径（包含文件名和文件格式）
      * @return boolean 成功true、失败false
      */
-    fun copyFile(resourceFile: File?, targetPath: String, fileName: String): Boolean {
+    private fun copyFile(resourceFile: File?, targetPath: String, fileName: String): Boolean {
         var result = false
         if (resourceFile == null || TextUtils.isEmpty(targetPath)) {
             return result
@@ -300,6 +321,5 @@ object GlideHelper {
 
         return result
     }
-
 
 }

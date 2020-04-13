@@ -10,6 +10,7 @@ import android.os.Build
 import android.text.TextUtils
 import android.view.View
 import android.view.WindowManager
+import java.text.DecimalFormat
 
 
 object Utils {
@@ -54,9 +55,21 @@ object Utils {
         return false
     }
 
-    fun formatImageSize(context: Context, size: Long): String {
+    fun formatImageSize(size: Long): String {
         if (size <= 0) return ""
-        return android.text.format.Formatter.formatFileSize(context, size)
+        val formater = DecimalFormat("####")
+        return if (size < 1024) {
+            size.toString() + "B"
+        } else if (size < 1024 * 1024) {
+            val kbsize = size / 1024f
+            formater.format(kbsize) + "KB"
+        } else if (size < 1024 * 1024 * 1024) {
+            val mbsize = size / 1024f / 1024f
+            formater.format(mbsize) + "MB"
+        } else if (size < 1024 * 1024 * 1024 * 1024) {
+            val gbsize = size / 1024f / 1024f / 1024f
+            formater.format(gbsize) + "GB"
+        } else ""
     }
 
 }

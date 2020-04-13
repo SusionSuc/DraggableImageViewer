@@ -9,11 +9,6 @@
                   android:theme="@style/DraggableTranslucentTheme">
         </activity>
 
-        <activity
-                android:name="com.draggable.library.extension.SimpleImageViewerActivity"
-                android:theme="@style/DraggableTranslucentTheme">
-        </activity>
-
     </application>
 
 </manifest>

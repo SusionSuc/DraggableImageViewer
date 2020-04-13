@@ -3,10 +3,11 @@ package com.draggable.library.extension.view
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.support.v4.view.PagerAdapter
-import android.support.v4.view.ViewPager
+import androidx.viewpager.widget.PagerAdapter
+import androidx.viewpager.widget.ViewPager
 import android.view.*
 import android.widget.FrameLayout
+import android.widget.Toast
 import com.draggable.library.core.DraggableImageView
 import com.draggable.library.extension.entities.DraggableImageInfo
 import com.draggable.library.extension.glide.GlideHelper
@@ -32,7 +33,11 @@ class DraggableImageGalleryViewer(context: Context) : FrameLayout(context) {
         initAdapter()
         mImageGalleryViewOriginDownloadImg.setOnClickListener {
             val currentImg = mImageList[mImageViewerViewPage.currentItem]
-            GlideHelper.downloadPicture(context, currentImg.originImg)
+            if (currentImg.imageCanDown){
+                GlideHelper.downloadPicture(context, currentImg.originImg)
+            }else{
+                Toast.makeText(context, "图片已受版权保护, 无法保存",Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -44,7 +49,7 @@ class DraggableImageGalleryViewer(context: Context) : FrameLayout(context) {
     }
 
     private fun initAdapter() {
-        mImageViewerViewPage.adapter = object : PagerAdapter() {
+        mImageViewerViewPage.adapter = object : androidx.viewpager.widget.PagerAdapter() {
 
             override fun isViewFromObject(view: View, any: Any) = view == any
 
@@ -60,7 +65,6 @@ class DraggableImageGalleryViewer(context: Context) : FrameLayout(context) {
                     imageView.showImage(mImageList[position])
                 }
                 imageView.setTag("$TAG_PREGIX$position")
-                mImageGalleryViewOriginDownloadImg.visibility = if (mImageList[position].imageCanDown) View.VISIBLE else View.GONE
                 return imageView
             }
 
@@ -69,7 +73,7 @@ class DraggableImageGalleryViewer(context: Context) : FrameLayout(context) {
             }
         }
 
-        mImageViewerViewPage.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+        mImageViewerViewPage.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {
 
             }

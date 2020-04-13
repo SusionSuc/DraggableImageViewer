@@ -26,6 +26,7 @@
             android:layout_centerInParent="true"
             android:background="@drawable/bg_view_origin_image"
             android:padding="6dp"
+            android:visibility="gone"
             android:text="查看原图"
             android:textColor="#ffffff"
             android:textSize="14dp" />

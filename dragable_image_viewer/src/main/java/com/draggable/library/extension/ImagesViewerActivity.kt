@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.view.ViewGroup
 import com.draggable.library.extension.entities.DraggableImageInfo
 import com.draggable.library.extension.view.DraggableImageGalleryViewer

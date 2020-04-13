@@ -6,7 +6,7 @@ import java.io.Serializable
 data class DraggableImageInfo(
     var originImg: String = "",
     var thumbnailImg: String = "",
-    val draggableInfo: DraggableParamsInfo = DraggableParamsInfo(),
+    var draggableInfo: DraggableParamsInfo = DraggableParamsInfo(),
     val imageSize: Long = 0,
     val imageCanDown: Boolean = true
 ) : Serializable {

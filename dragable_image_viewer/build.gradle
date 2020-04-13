@@ -1,25 +1,20 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply from: '../buildsystem/common-version.gradle'
-def uniqueVersion = rootProject.ext.versions
+apply from: '../common-version.gradle'
 
 android {
-    compileSdkVersion uniqueVersion.compileSdkVersion
-    buildToolsVersion uniqueVersion.buildToolsVersion
+    compileSdkVersion 28
 
     defaultConfig {
-        minSdkVersion uniqueVersion.minSdkVersion
-        targetSdkVersion uniqueVersion.targetSdkVersion
+        minSdkVersion 18
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-    }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -30,12 +25,10 @@ android {
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    //noinspection GradleCompatible
-    api "com.android.support:appcompat-v7:${uniqueVersion.supportLibVersion}"
-    //noinspection GradleCompatible
-    api "com.android.support:recyclerview-v7:${uniqueVersion.supportLibVersion}"
-    api "com.github.bumptech.glide:glide:${uniqueVersion.glideVersion}"
-    api "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${uniqueVersion.kotlinStdlibJdk7Version}"
-    api "io.reactivex.rxjava2:rxjava:${uniqueVersion.rx2javaVersion}"
-    api "io.reactivex.rxjava2:rxandroid:${uniqueVersion.rx2androidVersion}"
+    implementation rootProject.ext.androidXDependencies.appcompat
+    implementation rootProject.ext.androidXDependencies.recyclerView
+    api rootProject.ext.glide
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation rootProject.ext.rxJava
+    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
 }

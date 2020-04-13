@@ -1,10 +1,10 @@
 package com.drawable.viewer
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.draggable.library.core.DraggableImageViewerHelper
+import com.draggable.library.extension.DraggableImageViewerHelper
 import kotlinx.android.synthetic.main.activity_image_list_sample.*
 
 class ImageListSampleActivity : AppCompatActivity() {

@@ -1,12 +1,11 @@
 package com.draggable.library.core
 
+import android.app.Activity
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Matrix
+import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import androidx.appcompat.app.AppCompatActivity
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
@@ -47,6 +46,7 @@ class DraggableImageView : FrameLayout {
     private var downloadDisposable: Disposable? = null
     private var draggableZoomCore: DraggableZoomCore? = null
     private var needFitCenter = true
+    private var viewSelfWhRadio = 1f
 
     private var draggableZoomActionListener = object : DraggableZoomCore.ActionListener {
         override fun currentAlphaValue(alpha: Int) {
@@ -87,6 +87,10 @@ class DraggableImageView : FrameLayout {
         mDraggableImageViewViewOriginImage.setOnClickListener {
             loadImage(draggableImageInfo?.originImg ?: "", false)
         }
+        mDraggableImageViewViewOProgressBar.indeterminateDrawable.setColorFilter(
+            Color.parseColor("#ebebeb"),
+            PorterDuff.Mode.MULTIPLY
+        )
     }
 
     private fun clickToExit() {
@@ -128,19 +132,23 @@ class DraggableImageView : FrameLayout {
 
     fun showImageWithAnimator(paramsInfo: DraggableImageInfo) {
         draggableImageInfo = paramsInfo
+        currentLoadUrl = ""
         refreshOriginImageInfo()
         GlideHelper.retrieveImageWhRadioFromMemoryCache(
             context,
             paramsInfo.thumbnailImg
-        ) { whRadio ->
+        ) { inMemCache, whRadio, isGif ->
             draggableImageInfo?.draggableInfo?.scaledViewWhRadio = whRadio
             post {
-                if (!paramsInfo.draggableInfo.isValid()) {
+
+                viewSelfWhRadio = (width * 1f / height)
+                needFitCenter = whRadio > viewSelfWhRadio
+                if (!paramsInfo.draggableInfo.isValid() || (isGif && !needFitCenter) ) {
+                    //退出的时候不要再开启动画
+                    paramsInfo.draggableInfo = DraggableParamsInfo()
                     showImage(paramsInfo)
                     return@post
                 }
-
-                needFitCenter = whRadio > (width * 1f / height)
 
                 draggableZoomCore = DraggableZoomCore(
                     paramsInfo.draggableInfo,
@@ -151,21 +159,24 @@ class DraggableImageView : FrameLayout {
                     exitAnimatorCallback
                 )
                 draggableZoomCore?.adjustScaleViewToInitLocation()
-                loadAvailableImage(true)
+                loadAvailableImage(true, inMemCache)
             }
         }
     }
 
     fun showImage(paramsInfo: DraggableImageInfo) {
         draggableImageInfo = paramsInfo
+        currentLoadUrl = ""
         refreshOriginImageInfo()
         GlideHelper.retrieveImageWhRadioFromMemoryCache(
             context,
             paramsInfo.thumbnailImg
-        ) { whRadio ->
+        ) { inMemCache, whRadio , isGif->
             draggableImageInfo?.draggableInfo?.scaledViewWhRadio = whRadio
             post {
-                needFitCenter = whRadio > (width * 1f / height)
+                viewSelfWhRadio = (width * 1f / height)
+                needFitCenter = whRadio > viewSelfWhRadio
+
                 draggableZoomCore = DraggableZoomCore(
                     paramsInfo.draggableInfo,
                     mDraggableImageViewPhotoView,
@@ -175,12 +186,15 @@ class DraggableImageView : FrameLayout {
                     exitAnimatorCallback
                 )
                 draggableZoomCore?.adjustScaleViewToCorrectLocation()
-                loadAvailableImage(false)
+                loadAvailableImage(false, inMemCache)
             }
         }
     }
 
-    private fun loadAvailableImage(startAnimator: Boolean) {
+    private fun loadAvailableImage(startAnimator: Boolean, imgInMemCache: Boolean) {
+        if ((context as? AppCompatActivity)?.isDestroyed == true || (context as? AppCompatActivity)?.isFinishing == true) {
+            return
+        }
 
         mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
         mDraggableImageViewPhotoView.setImageResource(R.drawable.place_holder_transparent)
@@ -194,43 +208,43 @@ class DraggableImageView : FrameLayout {
 
         val targetUrl = if (wifiIsConnect || originImgInCache) originImg else thumnailImg
 
-        GlideHelper.checkImageIsInMemoryCache(
-            context,
-            thumnailImg
-        ) { inCache ->
-            if (inCache){
-                loadImage(thumnailImg, originImgInCache)
-            }
-            
-            if (inCache && startAnimator) {  //只有缩略图在缓存中时，才播放缩放入场动画
-                loadImage(thumnailImg, originImgInCache)
-                draggableZoomCore?.enterWithAnimator(object :
-                    DraggableZoomCore.EnterAnimatorCallback {
-                    override fun onEnterAnimatorStart() {
-                        mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
-                    }
+        setViewOriginImageBtnVisible(targetUrl != originImg)
 
-                    override fun onEnterAnimatorEnd() {
-                        if (needFitCenter) {
-                            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
-                            draggableZoomCore?.adjustViewToMatchParent()
-                        }
-                        loadImage(targetUrl, originImgInCache)
-                    }
-                })
-
-            } else {
-                loadImage(targetUrl, originImgInCache)
-                if (needFitCenter) {
-                    draggableZoomCore?.adjustViewToMatchParent()
-                }
-            }
+        if (imgInMemCache) {
+            loadImage(thumnailImg, originImgInCache)
         }
 
-        setViewOriginImageBtnVisible(targetUrl != originImg)
+        if (imgInMemCache && startAnimator) {  //只有缩略图在缓存中时，才播放缩放入场动画
+            draggableZoomCore?.enterWithAnimator(object :
+                DraggableZoomCore.EnterAnimatorCallback {
+                override fun onEnterAnimatorStart() {
+                    mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP
+                }
+
+                override fun onEnterAnimatorEnd() {
+                    if (needFitCenter) {
+                        mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
+                        draggableZoomCore?.adjustViewToMatchParent()
+                    }
+                    loadImage(targetUrl, originImgInCache)
+                }
+            })
+        } else {
+            loadImage(targetUrl, originImgInCache)
+            if (needFitCenter) {
+                draggableZoomCore?.adjustViewToMatchParent()
+            }
+        }
     }
 
     private fun loadImage(url: String, originIsInCache: Boolean) {
+
+        if (url == currentLoadUrl) return
+
+        if ((context is Activity) && ((context as Activity).isFinishing || (context as Activity).isDestroyed)) {
+            return
+        }
+
         currentLoadUrl = url
 
         if (url == draggableImageInfo?.originImg && !originIsInCache) {
@@ -247,20 +261,23 @@ class DraggableImageView : FrameLayout {
                     resource: Drawable,
                     transition: Transition<in Drawable>?
                 ) {
+                    val isGif = resource is GifDrawable
                     mDraggableImageViewViewOProgressBar.visibility = View.GONE
-                    if (resource is GifDrawable) {
+                    val whRadio = resource.intrinsicWidth * 1f / resource.intrinsicHeight
+                    val longImage = whRadio < viewSelfWhRadio
+
+                    if (isGif) {
+                        if (longImage){
+                            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                        }
                         Glide.with(context).load(url).into(mDraggableImageViewPhotoView)
                     } else {
+                        //普通图片已经做了缩放 -> 宽度缩放至屏幕的宽度
+                        mDraggableImageViewPhotoView.scaleType = if (longImage)ImageView.ScaleType.CENTER_CROP else ImageView.ScaleType.FIT_CENTER
                         mDraggableImageViewPhotoView.setImageBitmap(translateToFixedBitmap(resource))
                     }
 
                     if (url == draggableImageInfo?.originImg) {
-                        val whRadio = resource.intrinsicWidth * 1f / resource.intrinsicHeight
-                        if (whRadio < Utils.getScreenWidth() * 1f / Utils.getScreenHeight()) {
-                            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.CENTER_CROP //超长图
-                        } else {
-                            mDraggableImageViewPhotoView.scaleType = ImageView.ScaleType.FIT_CENTER
-                        }
                         mDraggableImageViewViewOriginImage.visibility = View.GONE
                     }
                 }
@@ -301,7 +318,7 @@ class DraggableImageView : FrameLayout {
         var bp = Glide.get(context).bitmapPool.get(
             bpWidth,
             bpHeight,
-            if (bpHeight > 5000) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
+            if (bpHeight > 4000) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
         )
 
         if (bp == null) {
@@ -322,11 +339,13 @@ class DraggableImageView : FrameLayout {
     private fun refreshOriginImageInfo() {
         if (draggableImageInfo!!.imageSize > 0) {
             mDraggableImageViewViewOriginImage.text =
-                "查看原图(${Utils.formatImageSize(context, draggableImageInfo?.imageSize ?: 0)})"
+                "查看原图(${Utils.formatImageSize(draggableImageInfo?.imageSize ?: 0)})"
+        } else {
+            mDraggableImageViewViewOriginImage.text = "查看原图"
         }
     }
 
-    fun setViewOriginImageBtnVisible(visible: Boolean) {
+    private fun setViewOriginImageBtnVisible(visible: Boolean) {
         mDraggableImageViewViewOriginImage.visibility = if (visible) View.VISIBLE else View.GONE
     }
 

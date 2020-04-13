@@ -140,6 +140,8 @@ class DraggableZoomCore(
                 Log.d(TAG, "ACTION_UP...")
             }
         }
+
+        Log.d(TAG, "DraggableZoomCore onInterceptTouchEvent  intercept : $intercept")
         return intercept
     }
 
@@ -164,7 +166,7 @@ class DraggableZoomCore(
             MotionEvent.ACTION_UP -> {
                 if (event.pointerCount == 1) {
                     if (mCurrentScaleY != 1f) {
-                        if (mCurrentScaleY < 0.7) {
+                        if (mCurrentScaleY < 0.85) {
                             exitWithAnimator(true)
                         } else {
                             restoreStatusWithAnimator()

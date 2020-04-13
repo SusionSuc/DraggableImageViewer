@@ -102,6 +102,7 @@ public class PhotoViewAttacher implements View.OnTouchListener, View.OnLayoutCha
             }
             mSuppMatrix.postTranslate(dx, dy);
 
+
             checkAndDisplayMatrix();
 
             /*
@@ -222,7 +223,7 @@ public class PhotoViewAttacher implements View.OnTouchListener, View.OnLayoutCha
                     float y = ev.getY();
                     if (scale < getMediumScale()) {
                         setScale(getMediumScale(), x, y, true);
-                    }  else {
+                    } else {
                         setScale(getMinimumScale(), x, y, true);
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
@@ -654,6 +655,9 @@ public class PhotoViewAttacher implements View.OnTouchListener, View.OnLayoutCha
         final float height = rect.height(), width = rect.width();
         float deltaX = 0, deltaY = 0;
         final int viewHeight = getImageViewHeight(mImageView);
+
+        Log.d(TAG, "height <= viewHeight :"+(height <= viewHeight));
+
         if (height <= viewHeight) {
             switch (mScaleType) {
                 case FIT_START:

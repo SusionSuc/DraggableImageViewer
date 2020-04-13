@@ -1,9 +1,9 @@
-package com.draggable.library.core
+package com.draggable.library.extension
 
 import android.content.Context
 import android.graphics.Rect
 import android.view.View
-import com.draggable.library.extension.ImagesViewerActivity
+import com.draggable.library.core.DraggableParamsInfo
 import com.draggable.library.extension.entities.DraggableImageInfo
 
 object DraggableImageViewerHelper {
@@ -26,7 +26,12 @@ object DraggableImageViewerHelper {
         showImages(
             context,
             if (view == null) null else listOf(view),
-            listOf(ImageInfo(thumbUrl, url)),
+            listOf(
+                ImageInfo(
+                    thumbUrl,
+                    url
+                )
+            ),
             showDownLoadBtn = showDownLoadBtn
         )
     }
@@ -39,9 +44,20 @@ object DraggableImageViewerHelper {
     ) {
         val imgInfos = ArrayList<ImageInfo>()
         images.forEach {
-            imgInfos.add(ImageInfo(it, it))
+            imgInfos.add(
+                ImageInfo(
+                    it,
+                    it
+                )
+            )
         }
-        showImages(context, null, imgInfos, index, showDownLoadBtn)
+        showImagesWithSingleView(
+            context,
+            null,
+            imgInfos,
+            index,
+            showDownLoadBtn
+        )
     }
 
     fun showSimpleImage(
@@ -56,20 +72,6 @@ object DraggableImageViewerHelper {
             listOf(imgInfo),
             showDownLoadBtn = showDownLoadBtn
         )
-    }
-
-    fun showImages(
-        context: Context,
-        imgs: List<String>,
-        index: Int = 0,
-        views: List<View>?,
-        showDownLoadBtn: Boolean = true
-    ) {
-        val imgInfos = ArrayList<ImageInfo>()
-        imgs.forEach {
-            imgInfos.add(ImageInfo(it, it))
-        }
-        showImages(context, views, imgInfos, index, showDownLoadBtn)
     }
 
     fun showImages(
@@ -108,6 +110,42 @@ object DraggableImageViewerHelper {
         ImagesViewerActivity.start(context, draggableImageInfos, index)
     }
 
+    fun showImagesWithSingleView(
+        context: Context,
+        view: View?,
+        imgInfos: List<ImageInfo>,
+        picIndex: Int = 0,
+        showDownLoadBtn: Boolean = true
+    ){
+        if (imgInfos.isEmpty()) return
+        //多张图片开启复杂的方式显示
+        val draggableImageInfos = ArrayList<DraggableImageInfo>()
+        imgInfos.forEachIndexed { index, imageInfo ->
+            if (view != null && index == picIndex) {
+                draggableImageInfos.add(
+                    createImageDraggableParamsWithWHRadio(
+                        view,
+                        imageInfo.originUrl,
+                        imageInfo.thumbnailUrl,
+                        imageInfo.imgSize,
+                        showDownLoadBtn
+                    )
+                )
+            } else {
+                draggableImageInfos.add(
+                    createImageDraggableParamsWithWHRadio(
+                        null,
+                        imageInfo.originUrl,
+                        imageInfo.thumbnailUrl,
+                        imageInfo.imgSize,
+                        showDownLoadBtn
+                    )
+                )
+            }
+        }
+        ImagesViewerActivity.start(context, draggableImageInfos, picIndex)
+    }
+
     /**
      * 根据宽高比，显示一张图片
      * @param whRadio  图片宽高比
@@ -123,8 +161,8 @@ object DraggableImageViewerHelper {
         if (view != null) {
             val location = IntArray(2)
             view.getLocationInWindow(location)
-            val windowRect = Rect()
-            view.getWindowVisibleDisplayFrame(windowRect)
+//            val windowRect = Rect()
+//            view.getWindowVisibleDisplayFrame(windowRect)
             val top = location[1]
             draggableInfo = DraggableImageInfo(
                 originUrl,
@@ -139,7 +177,7 @@ object DraggableImageViewerHelper {
                 showDownLoadBtn
             )
         } else {
-            draggableInfo = DraggableImageInfo(originUrl, thumbUrl, imageSize = imgSize)
+            draggableInfo = DraggableImageInfo(originUrl, thumbUrl, imageSize = imgSize,imageCanDown = showDownLoadBtn)
         }
 
         draggableInfo.adjustImageUrl()
