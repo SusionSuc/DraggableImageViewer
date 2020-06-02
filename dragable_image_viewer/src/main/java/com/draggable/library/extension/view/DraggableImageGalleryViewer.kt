@@ -33,11 +33,7 @@ class DraggableImageGalleryViewer(context: Context) : FrameLayout(context) {
         initAdapter()
         mImageGalleryViewOriginDownloadImg.setOnClickListener {
             val currentImg = mImageList[mImageViewerViewPage.currentItem]
-            if (currentImg.imageCanDown){
-                GlideHelper.downloadPicture(context, currentImg.originImg)
-            }else{
-                Toast.makeText(context, "图片已受版权保护, 无法保存",Toast.LENGTH_SHORT).show()
-            }
+            GlideHelper.downloadPicture(context, currentImg.originImg)
         }
     }
 
@@ -56,15 +52,17 @@ class DraggableImageGalleryViewer(context: Context) : FrameLayout(context) {
             override fun getCount() = mImageList.size
 
             override fun instantiateItem(container: ViewGroup, position: Int): DraggableImageView {
+                val imageInfo = mImageList[position]
                 val imageView = getImageViewFromCacheContainer()
                 container.addView(imageView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
                 if (showWithAnimator) {
                     showWithAnimator = false
-                    imageView.showImageWithAnimator(mImageList[position])
+                    imageView.showImageWithAnimator(imageInfo)
                 } else {
-                    imageView.showImage(mImageList[position])
+                    imageView.showImage(imageInfo)
                 }
                 imageView.setTag("$TAG_PREGIX$position")
+                mImageGalleryViewOriginDownloadImg.visibility = if (imageInfo.imageCanDown) View.VISIBLE else View.GONE
                 return imageView
             }
 

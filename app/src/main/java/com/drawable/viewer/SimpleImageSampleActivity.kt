@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.draggable.library.extension.ImageViewerHelper
 import kotlinx.android.synthetic.main.activity_sample_simple_image.*
+import kotlin.random.Random
 
 class SimpleImageSampleActivity : AppCompatActivity() {
 
@@ -44,7 +45,8 @@ class SimpleImageSampleActivity : AppCompatActivity() {
                 ImageViewerHelper.showSimpleImage(
                     this,
                     sampleInfo.url,
-                    view = sampleInfo.view
+                    view = sampleInfo.view,
+                    showDownLoadBtn = false
                 )
             }
             loadImage(sampleInfo.url, sampleInfo.view)

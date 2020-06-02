@@ -14,7 +14,7 @@
 
 ```
 dependencies {
-    implementation 'com.susion:image-viewer:1.0.1'
+    implementation 'com.susion:image-viewer:1.0.2'
 }
 ```
 
